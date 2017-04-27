@@ -1,0 +1,23 @@
+{
+  "name": "@alicloud/fc",
+  "version": "1.0.0",
+  "description": "Aliyun Function Compute API SDK",
+  "main": "lib/client.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "author": "Jackson Tian",
+  "license": "MIT",
+  "dependencies": {
+    "debug": "^2.6.4",
+    "httpx": "^2.1.1",
+    "kitx": "^1.2.0"
+  },
+  "devDependencies": {
+    "coveralls": "^2.13.0",
+    "eslint": "^3.19.0",
+    "expect.js": "^0.3.1",
+    "mocha": "^3.3.0",
+    "nyc": "^10.2.0"
+  }
+}
