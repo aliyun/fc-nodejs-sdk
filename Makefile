@@ -7,8 +7,8 @@ PATH := ./node_modules/.bin:$(PATH)
 lint:
 	@eslint --fix lib index.js test
 
-test/figures/test.zip: test/figures/code/main.js
-	@zip -r $@ -j test/figures/code
+test/figures/test.zip: test/figures/main.js
+	@zip -r $@ -j test/figures/main.js
 
 figures: test/figures/test.zip
 	@unzip -v $^

@@ -184,7 +184,7 @@ describe('client test', function () {
     });
 
     it('createFunction should ok', async function() {
-      const response = await client.createFunction(serviceName, {
+      const func = await client.createFunction(serviceName, {
         functionName: functionName,
         description: 'function desc',
         memorySize: 128,
@@ -195,8 +195,8 @@ describe('client test', function () {
           zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
         }
       });
-      expect(response).to.be.ok();
-      expect(response).to.have.property('functionName', functionName);
+      expect(func).to.be.ok();
+      expect(func).to.have.property('functionName', functionName);
     });
 
     it('listFunctions should ok', async function() {
@@ -225,8 +225,7 @@ describe('client test', function () {
       const response = await client.invokeFunction(serviceName, functionName, {
         event: Buffer.from('')
       });
-      expect(response).to.have.property('functionName', functionName);
-      expect(response).to.have.property('description', 'updated function desc');
+      expect(response).to.be('hello world');
     });
   });
 });
