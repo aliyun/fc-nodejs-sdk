@@ -178,7 +178,11 @@ describe('client test', function () {
     });
 
     after(async function () {
-      await client.deleteFunction(serviceName, functionName);
+      try {
+        await client.deleteFunction(serviceName, functionName);
+      } catch (ex) {
+        // Ignore
+      }
       await client.deleteService(serviceName);
       // no exception = ok
     });
@@ -226,6 +230,113 @@ describe('client test', function () {
         event: Buffer.from('')
       });
       expect(response).to.be('hello world');
+    });
+
+    it('invokeFunction should faster', async function() {
+      const response = await client.invokeFunction(serviceName, functionName, {
+        event: Buffer.from('')
+      });
+      expect(response).to.be('hello world');
+    });
+
+    it('deleteFunction should ok', async function() {
+      await client.deleteFunction(serviceName, functionName);
+      // No exception, no failed
+    });
+  });
+
+  describe('trigger should ok', function () {
+    const serviceName = 'unit-test';
+    const functionName = 'hello-world';
+    const triggerName = 'image_resize';
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+
+    before(async function () {
+      // clean up
+      const service = await client.createService(serviceName);
+      expect(service).to.be.ok();
+      expect(service).to.have.property('serviceName', serviceName);
+      const func = await client.createFunction(serviceName, {
+        functionName: functionName,
+        description: 'function desc',
+        memorySize: 128,
+        handler: 'main.handler',
+        runtime: 'nodejs4.4',
+        timeout: 10,
+        code: {
+          zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
+        }
+      });
+      expect(func).to.be.ok();
+      expect(func).to.have.property('functionName', functionName);
+    });
+
+    after(async function () {
+      try {
+        await client.deleteTrigger(serviceName, functionName, triggerName);
+      } catch (ex) {
+        // Ignore
+        console.log(ex.stack);
+      }
+      try {
+        await client.deleteFunction(serviceName, functionName);
+      } catch (ex) {
+        // Ignore
+        console.log(ex.stack);
+      }
+      await client.deleteService(serviceName);
+      // no exception = ok
+    });
+
+    it('createTrigger should ok', async function() {
+      const trigger = await client.createTrigger(serviceName, functionName, {
+        invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test`,
+        sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:my-lambda`,
+        triggerName: triggerName,
+        triggerType: 'oss',
+        triggerConfig: {
+          events: ['oss:ObjectCreated:*'],
+          filter: {
+            key: {
+              prefix: 'prefix',
+              suffix: 'suffix'
+            }
+          }
+        }
+      });
+      expect(trigger).to.be.ok();
+      expect(trigger).to.have.property('triggerName', triggerName);
+    });
+
+    it('listTriggers should ok', async function() {
+      const response = await client.listTriggers(serviceName, functionName);
+      expect(response).to.be.ok();
+      expect(response.triggers).to.be.ok();
+      expect(response.triggers).to.have.length(1);
+      const [trigger] = response.triggers;
+      expect(trigger).to.have.property('triggerName', triggerName);
+    });
+
+    it('getTrigger should ok', async function() {
+      const trigger = await client.getTrigger(serviceName, functionName, triggerName);
+      expect(trigger).to.have.property('triggerName', triggerName);
+    });
+
+    it('updateTrigger should ok', async function() {
+      const trigger = await client.updateTrigger(serviceName, functionName, triggerName, {
+        invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`,
+      });
+      expect(trigger).to.have.property('triggerName', triggerName);
+      expect(trigger).to.have.property('invocationRole', `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`);
+    });
+
+    it('deleteTrigger should ok', async function() {
+      await client.deleteTrigger(serviceName, functionName, triggerName);
+      // No exception, no failed
     });
   });
 });
