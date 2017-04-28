@@ -1,7 +1,6 @@
-TESTS = test/*.js
+TESTS = test/*.test.js
 REPORTER = spec
 TIMEOUT = 20000
-MOCHA = ./node_modules/mocha/bin/_mocha
 PATH := ./node_modules/.bin:$(PATH)
 
 lint:
@@ -24,4 +23,7 @@ test-coveralls: lint figures
 	@echo TRAVIS_JOB_ID $(TRAVIS_JOB_ID)
 	@nyc report --reporter=text-lcov | coveralls
 
-.PHONY: test
+doc:
+	@doxmate build
+
+.PHONY: test doc

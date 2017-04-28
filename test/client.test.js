@@ -134,9 +134,9 @@ describe('client test', function () {
       const response = await client.listServices();
       expect(response).to.be.ok();
       expect(response.services).to.be.ok();
-      expect(response.services.length).to.above(1);
+      expect(response.services.length).to.above(0);
       const [service] = response.services;
-      expect(service).to.have.property('serviceName', serviceName);
+      expect(service).to.have.property('serviceName');
     });
 
     it('getService should ok', async function() {
