@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.13.0",
+    "doxmate": "^0.3.1",
     "eslint": "^3.19.0",
     "expect.js": "^0.3.1",
     "mocha": "^3.3.0",
