@@ -1,4 +1,4 @@
-fc-nodejs-sdk http://doxmate.cool/aliyun/fc-nodejs-sdk/index.html
+fc-nodejs-sdk
 =======
 
 [![NPM version][npm-image]][npm-url]
@@ -11,6 +11,8 @@ fc-nodejs-sdk http://doxmate.cool/aliyun/fc-nodejs-sdk/index.html
 [travis-url]: https://travis-ci.org/aliyun/fc-nodejs-sdk.svg?branch=master
 [cov-image]: https://coveralls.io/repos/aliyun/fc-nodejs-sdk/badge.svg?branch=master&service=github
 [cov-url]: https://coveralls.io/github/aliyun/fc-nodejs-sdk?branch=master
+
+Documents: http://doxmate.cool/aliyun/fc-nodejs-sdk/index.html
 
 ## Install
 
