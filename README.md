@@ -1,6 +1,17 @@
 fc-nodejs-sdk
 =======
 
+[![NPM version][npm-image]][npm-url]
+[![build status][travis-image]][travis-url]
+[![coverage][cov-image]][cov-url]
+
+[npm-image]: https://img.shields.io/npm/v/@alicloud/fc.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/@alicloud/fc
+[travis-image]: https://img.shields.io/travis/aliyun/fc-nodejs-sdk/master.svg?style=flat-square
+[travis-url]: https://travis-ci.org/aliyun/fc-nodejs-sdk.svg?branch=master
+[cov-image]: https://coveralls.io/repos/aliyun/fc-nodejs-sdk/badge.svg?branch=master&service=github
+[cov-url]: https://coveralls.io/github/aliyun/fc-nodejs-sdk?branch=master
+
 ## Install
 
 ```bash
