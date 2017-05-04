@@ -5,7 +5,7 @@ const path = require('path');
 
 const expect = require('expect.js');
 
-const FunctionComputeClient = require('../');
+const FunctionComputeClient = require('../').useAsync();
 
 const ACCOUNT_ID = process.env.ACCOUNT_ID || 'accountid';
 const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
