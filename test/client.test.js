@@ -10,6 +10,8 @@ const FunctionComputeClient = require('../');
 const ACCOUNT_ID = process.env.ACCOUNT_ID || 'accountid';
 const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
+const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
+const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
 
 describe('client test', function () {
 
@@ -99,7 +101,6 @@ describe('client test', function () {
 
   describe('service should ok', function () {
 
-    const serviceName = 'unit-test';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
       accessKeySecret: ACCESS_KEY_SECRET,
@@ -162,7 +163,6 @@ describe('client test', function () {
   });
 
   describe('function should ok', function () {
-    const serviceName = 'unit-test';
     const functionName = 'hello-world';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
@@ -246,7 +246,6 @@ describe('client test', function () {
   });
 
   describe('trigger should ok', function () {
-    const serviceName = 'unit-test';
     const functionName = 'hello-world';
     const triggerName = 'image_resize';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
@@ -295,7 +294,7 @@ describe('client test', function () {
     it('createTrigger should ok', async function() {
       const trigger = await client.createTrigger(serviceName, functionName, {
         invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test`,
-        sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:my-lambda`,
+        sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:${triggerBucketName}`,
         triggerName: triggerName,
         triggerType: 'oss',
         triggerConfig: {
