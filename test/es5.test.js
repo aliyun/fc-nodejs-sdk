@@ -8,7 +8,7 @@ var ACCOUNT_ID = process.env.ACCOUNT_ID || 'accountid';
 var ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 var ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
 
-describe.only('es5 client test', function () {
+describe('es5 client test', function () {
 
   it('listServices should ok', function(done) {
     var client = new FunctionComputeClient(ACCOUNT_ID, {
