@@ -4,18 +4,19 @@ node_js:
   - "7"
   - "6"
   - "4"
+
 env:
   - TEST_COV=true
   - TEST_COV=false
 
 matrix:
-  include:
+  exclude:
     - node_js: "4"
-      env: TEST_COV=false
-    - node_js: "6"
-      env: TEST_COV=false
-    - node_js: "7"
       env: TEST_COV=true
+    - node_js: "6"
+      env: TEST_COV=true
+    - node_js: "7"
+      env: TEST_COV=false
 
 script:
   - 'make test-es5'
