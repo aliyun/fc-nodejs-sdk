@@ -10,6 +10,7 @@ const FunctionComputeClient = require('../').useAsync();
 const ACCOUNT_ID = process.env.ACCOUNT_ID || 'accountid';
 const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
+const serviceName = 'fc-nodejs-sdk-unit-test';
 
 describe('client test', function () {
 
@@ -99,7 +100,6 @@ describe('client test', function () {
 
   describe('service should ok', function () {
 
-    const serviceName = 'unit-test';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
       accessKeySecret: ACCESS_KEY_SECRET,
@@ -162,7 +162,6 @@ describe('client test', function () {
   });
 
   describe('function should ok', function () {
-    const serviceName = 'unit-test';
     const functionName = 'hello-world';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
@@ -246,7 +245,6 @@ describe('client test', function () {
   });
 
   describe('trigger should ok', function () {
-    const serviceName = 'unit-test';
     const functionName = 'hello-world';
     const triggerName = 'image_resize';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
