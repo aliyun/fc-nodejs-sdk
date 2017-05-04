@@ -16,7 +16,7 @@ test: figures
 	@mocha -t $(TIMEOUT) -R spec $(TESTS)
 
 test-es5:
-	@mocha -t $(TIMEOUT) -R spec test/es5.test.js
+	@mocha -t $(TIMEOUT) -R spec "test/es5.test.js"
 
 test-cov: figures
 	@nyc --reporter=html --reporter=text mocha -t $(TIMEOUT) -R spec $(TESTS)
@@ -29,4 +29,4 @@ test-coveralls: lint figures
 doc:
 	@doxmate build
 
-.PHONY: test doc
+.PHONY: test test-es5 doc
