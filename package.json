@@ -9,7 +9,7 @@
   },
   "git-pre-hooks": {
     "pre-release": "npm run build-es5",
-    "post-release": "npm publish"
+    "post-release": "npm publish --access public"
   },
   "author": "Jackson Tian",
   "license": "MIT",
