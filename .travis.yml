@@ -1,4 +1,16 @@
 language: node_js
+
 node_js:
   - "7"
-script: make test-coveralls
+  - "4"
+env:
+  - TEST_COV=true
+  - TEST_COV=false
+
+matrix:
+  exclude:
+    - node_js: "4"
+      env: TEST_COV=true
+script:
+  - 'make test-es5'
+  - '[ "$TEST_COV" = "false" ] || make test-coveralls'
