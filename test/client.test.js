@@ -5,12 +5,13 @@ const path = require('path');
 
 const expect = require('expect.js');
 
-const FunctionComputeClient = require('../').useAsync();
+const FunctionComputeClient = require('../');
 
 const ACCOUNT_ID = process.env.ACCOUNT_ID || 'accountid';
 const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
-const serviceName = 'fc-nodejs-sdk-unit-test';
+const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
+const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
 
 describe('client test', function () {
 
@@ -293,7 +294,7 @@ describe('client test', function () {
     it('createTrigger should ok', async function() {
       const trigger = await client.createTrigger(serviceName, functionName, {
         invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test`,
-        sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:my-lambda`,
+        sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:${triggerBucketName}`,
         triggerName: triggerName,
         triggerType: 'oss',
         triggerConfig: {

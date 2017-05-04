@@ -1,8 +1,13 @@
 'use strict';
 
-var Client = require('./es5/client.js');
-Client.useAsync = function () {
-  return require('./lib/client.js');
-};
+function supportAsyncFunctions() {
+  try {
+    new Function('(async function () {})()');
+    return true;
+  } catch (ex) {
+    return false;
+  }
+}
 
-module.exports = Client;
+module.exports = supportAsyncFunctions() ?
+  require('./lib/client.js') : require('./es5/client.js');
