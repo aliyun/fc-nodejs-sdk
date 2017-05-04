@@ -246,11 +246,12 @@ var Client = function () {
     }()
 
     /**
-     * 创建service
+     * 创建Service
      *
      * Options:
-     * - description service的简短描述
-     * - logConfig
+     * - description Service的简短描述
+     * - logConfig log config
+     * - role Service role
      *
      * @param {String} serviceName 服务名
      * @param {Object} options 选项，optional
@@ -268,9 +269,16 @@ var Client = function () {
     }
 
     /**
-     * 获取service列表
+     * 获取Service列表
      *
-     * @return {Promise} 返回服务列表
+     * Options:
+     * - limit
+     * - prefix
+     * - startKey
+     * - nextToken
+     *
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Service 列表
      */
 
   }, {
@@ -284,6 +292,7 @@ var Client = function () {
     /**
      * 获取service信息
      *
+     * @param {String} serviceName
      * @return {Promise} 返回 Service 信息
      */
 
@@ -292,6 +301,20 @@ var Client = function () {
     value: function getService(serviceName) {
       return this.request('GET', '/services/' + serviceName, null);
     }
+
+    /**
+     * 更新Service信息
+     *
+     * Options:
+     * - description Service的简短描述
+     * - logConfig log config
+     * - role service role
+     *
+     * @param {String} serviceName 服务名
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Service 信息
+     */
+
   }, {
     key: 'updateService',
     value: function updateService(serviceName) {
@@ -299,6 +322,14 @@ var Client = function () {
 
       return this.request('PUT', '/services/' + serviceName, null, options);
     }
+
+    /**
+     * 删除Service
+     *
+     * @param {String} serviceName
+     * @return {Promise}
+     */
+
   }, {
     key: 'deleteService',
     value: function deleteService(serviceName) {
@@ -306,11 +337,44 @@ var Client = function () {
 
       return this.request('DELETE', '/services/' + serviceName, null, options);
     }
+
+    /**
+     * 创建Function
+     *
+     * Options:
+     * - description function的简短描述
+     * - code function代码
+     * - functionName
+     * - handler
+     * - memorySize
+     * - runtime
+     * - timeout
+     *
+     * @param {String} serviceName 服务名
+     * @param {Object} options Function配置
+     * @return {Promise} 返回 Function 信息
+     */
+
   }, {
     key: 'createFunction',
     value: function createFunction(serviceName, options) {
       return this.request('POST', '/services/' + serviceName + '/functions', null, options);
     }
+
+    /**
+     * 获取Function列表
+     *
+     * Options:
+     * - limit
+     * - prefix
+     * - startKey
+     * - nextToken
+     *
+     * @param {String} serviceName
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回Function列表
+     */
+
   }, {
     key: 'listFunctions',
     value: function listFunctions(serviceName) {
@@ -318,16 +382,44 @@ var Client = function () {
 
       return this.request('GET', '/services/' + serviceName + '/functions', options);
     }
+
+    /**
+     * 获取Function信息
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @return {Promise} 返回 Function 信息
+     */
+
   }, {
     key: 'getFunction',
     value: function getFunction(serviceName, functionName) {
       return this.request('GET', '/services/' + serviceName + '/functions/' + functionName);
     }
+
+    /**
+     * 更新Function信息
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} options Function配置，见createFunction
+     * @return {Promise} 返回 Function 信息
+     */
+
   }, {
     key: 'updateFunction',
     value: function updateFunction(serviceName, functionName, options) {
       return this.request('PUT', '/services/' + serviceName + '/functions/' + functionName, null, options);
     }
+
+    /**
+     * 删除Function
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @return {Promise}
+     */
+
   }, {
     key: 'deleteFunction',
     value: function deleteFunction(serviceName, functionName) {
@@ -335,16 +427,59 @@ var Client = function () {
 
       return this.request('DELETE', '/services/' + serviceName + '/functions/' + functionName, options);
     }
+
+    /**
+     * 调用Function
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} options event信息
+     * @return {Promise} 返回Function的执行结果
+     */
+
   }, {
     key: 'invokeFunction',
     value: function invokeFunction(serviceName, functionName, options) {
       return this.request('POST', '/services/' + serviceName + '/functions/' + functionName + '/invocations', null, options);
     }
+
+    /**
+     * 创建Trigger
+     *
+     * Options:
+     * - invocationRole
+     * - sourceArn
+     * - triggerType
+     * - triggerName
+     * - triggerConfig
+     *
+     * @param {String} serviceName 服务名
+     * @param {String} functionName 服务名
+     * @param {Object} options Trigger配置
+     * @return {Promise} 返回 Trigger 信息
+     */
+
   }, {
     key: 'createTrigger',
     value: function createTrigger(serviceName, functionName, options) {
       return this.request('POST', '/services/' + serviceName + '/functions/' + functionName + '/triggers', null, options);
     }
+
+    /**
+     * 获取Trigger列表
+     *
+     * Options:
+     * - limit
+     * - prefix
+     * - startKey
+     * - nextToken
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回Trigger列表
+     */
+
   }, {
     key: 'listTriggers',
     value: function listTriggers(serviceName, functionName) {
@@ -352,11 +487,32 @@ var Client = function () {
 
       return this.request('GET', '/services/' + serviceName + '/functions/' + functionName + '/triggers', options);
     }
+
+    /**
+     * 获取Trigger信息
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} triggerName
+     * @return {Promise} 返回 Trigger 信息
+     */
+
   }, {
     key: 'getTrigger',
     value: function getTrigger(serviceName, functionName, triggerName) {
       return this.request('GET', '/services/' + serviceName + '/functions/' + functionName + '/triggers/' + triggerName);
     }
+
+    /**
+     * 更新Trigger信息
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} triggerName
+     * @param {Object} options Trigger配置，见createTrigger
+     * @return {Promise} 返回 Trigger 信息
+     */
+
   }, {
     key: 'updateTrigger',
     value: function updateTrigger(serviceName, functionName, triggerName, options) {
@@ -364,7 +520,12 @@ var Client = function () {
     }
 
     /**
-     * Delete
+     * 删除Trigger
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} triggerName
+     * @return {Promise}
      */
 
   }, {
