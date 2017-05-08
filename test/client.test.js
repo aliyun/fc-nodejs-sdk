@@ -226,17 +226,21 @@ describe('client test', function () {
     });
 
     it('invokeFunction should ok', async function() {
-      const response = await client.invokeFunction(serviceName, functionName, {
-        event: Buffer.from('')
-      });
+      const response = await client.invokeFunction(serviceName, functionName, 'world');
       expect(response).to.be('hello world');
     });
 
     it('invokeFunction should faster', async function() {
-      const response = await client.invokeFunction(serviceName, functionName, {
-        event: Buffer.from('')
-      });
+      const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'));
       expect(response).to.be('hello world');
+    });
+
+    it('invokeFunction with invalid event should fail', async function() {
+      expect(() => {
+        client.invokeFunction(serviceName, functionName, {
+          event: 'hello world',
+        });
+      }).to.throwException(/"event" must be String or Buffer/);
     });
 
     it('deleteFunction should ok', async function() {
