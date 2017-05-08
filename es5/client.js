@@ -134,7 +134,7 @@ var Client = function () {
     key: 'request',
     value: function () {
       var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(method, path, query, body) {
-        var url, headers, postBody, content, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
+        var url, headers, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -149,14 +149,22 @@ var Client = function () {
 
 
                 if (body) {
-                  content = (0, _stringify2.default)(body);
+                  debug('request body: %s', body);
+                  buff = null;
 
-                  debug('request body: %s', content);
-                  buff = new Buffer(content, 'utf8');
+                  if (Buffer.isBuffer(body)) {
+                    buff = body;
+                    headers['content-type'] = 'application/octet-stream';
+                  } else if (typeof body === 'string') {
+                    buff = new Buffer(body, 'utf8');
+                    headers['content-type'] = 'application/octet-stream';
+                  } else {
+                    buff = new Buffer((0, _stringify2.default)(body), 'utf8');
+                    headers['content-type'] = 'application/json';
+                  }
                   digest = kitx.md5(buff, 'hex');
                   md5 = new Buffer(digest, 'utf8').toString('base64');
 
-                  headers['content-type'] = 'application/json';
                   headers['content-length'] = buff.length;
                   headers['content-md5'] = md5;
                   postBody = buff;
@@ -433,14 +441,17 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {String} functionName
-     * @param {Object} options event信息
+     * @param {Object} event event信息
      * @return {Promise} 返回Function的执行结果
      */
 
   }, {
     key: 'invokeFunction',
-    value: function invokeFunction(serviceName, functionName, options) {
-      return this.request('POST', '/services/' + serviceName + '/functions/' + functionName + '/invocations', null, options);
+    value: function invokeFunction(serviceName, functionName, event) {
+      if (event && typeof event !== 'string' && !Buffer.isBuffer(event)) {
+        throw new TypeError('"event" must be String or Buffer');
+      }
+      return this.request('POST', '/services/' + serviceName + '/functions/' + functionName + '/invocations', null, event);
     }
 
     /**
