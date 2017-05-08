@@ -68,7 +68,7 @@ function composeStringToSign(method, path, headers) {
 
 function signString(source, secret) {
   var buff = crypto.createHmac('sha256', secret).update(source, 'utf8').digest();
-  return Buffer.from(buff, 'binary').toString('base64');
+  return new Buffer(buff, 'binary').toString('base64');
 }
 
 var Client = function () {
@@ -152,9 +152,9 @@ var Client = function () {
                   content = (0, _stringify2.default)(body);
 
                   debug('request body: %s', content);
-                  buff = Buffer.from(content, 'utf8');
+                  buff = new Buffer(content, 'utf8');
                   digest = kitx.md5(buff, 'hex');
-                  md5 = Buffer.from(digest, 'utf8').toString('base64');
+                  md5 = new Buffer(digest, 'utf8').toString('base64');
 
                   headers['content-type'] = 'application/json';
                   headers['content-length'] = buff.length;
