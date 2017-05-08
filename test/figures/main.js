@@ -1,5 +1,6 @@
 'use strict';
 
 exports.handler = function(event, context, callback) {
-  callback(null, 'hello world');
+  console.log('event: %s', event.toString());
+  callback(null, 'hello '+event.toString());
 };
