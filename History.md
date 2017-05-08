@@ -1,3 +1,8 @@
+1.0.1 / 2017-05-08
+==================
+
+  * Replace Buffer.from() with new Buffer() for compatibility
+
 1.0.0 / 2017-05-04
 ==================
 
