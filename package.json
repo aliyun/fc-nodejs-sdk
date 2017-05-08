@@ -1,6 +1,6 @@
 {
   "name": "@alicloud/fc",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Aliyun Function Compute API SDK",
   "main": "index.js",
   "scripts": {
