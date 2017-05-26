@@ -217,6 +217,12 @@ describe('client test', function () {
       expect(func).to.have.property('functionName', functionName);
     });
 
+    it('getFunctionCode should ok', async function() {
+      const code = await client.getFunctionCode(serviceName, functionName);
+      expect(code).to.have.property('url');
+      expect(code).to.have.property('checksum');
+    });
+
     it('updateFunction should ok', async function() {
       const func = await client.updateFunction(serviceName, functionName, {
         description: 'updated function desc'
