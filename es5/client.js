@@ -406,6 +406,20 @@ var Client = function () {
     }
 
     /**
+     * 获取Function Code信息
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @return {Promise} 返回 Function Code 信息
+     */
+
+  }, {
+    key: 'getFunctionCode',
+    value: function getFunctionCode(serviceName, functionName) {
+      return this.request('GET', '/services/' + serviceName + '/functions/' + functionName + '/code');
+    }
+
+    /**
      * 更新Function信息
      *
      * @param {String} serviceName
