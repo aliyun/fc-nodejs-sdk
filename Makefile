@@ -16,7 +16,7 @@ test: figures
 	@mocha -t $(TIMEOUT) -R spec $(TESTS)
 
 test-es5:
-	@mocha -t $(TIMEOUT) -R spec "test/es5.test.js"
+	@mocha --compilers js:babel-core/register -t $(TIMEOUT) -R spec $(TESTS)
 
 test-cov: figures
 	@nyc --reporter=html --reporter=text mocha -t $(TIMEOUT) -R spec $(TESTS)
