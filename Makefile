@@ -15,8 +15,8 @@ figures: test/figures/test.zip
 test: figures
 	@mocha -t $(TIMEOUT) -R spec $(TESTS)
 
-test-es5:
-	@mocha -t $(TIMEOUT) -R spec "test/es5.test.js"
+test-es5: figures
+	@mocha --compilers js:babel-register -t $(TIMEOUT) -R spec $(TESTS)
 
 test-cov: figures
 	@nyc --reporter=html --reporter=text mocha -t $(TIMEOUT) -R spec $(TESTS)
