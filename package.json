@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "make test",
-    "build-es5": "babel lib/ -d es5/ --presets env --plugins transform-runtime"
+    "build-es5": "babel lib/ -d es5/"
   },
   "git-pre-hooks": {
     "pre-release": "npm run build-es5",
@@ -14,7 +14,6 @@
   "author": "Jackson Tian",
   "license": "MIT",
   "dependencies": {
-    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-runtime": "^6.23.0",
     "debug": "^2.6.4",
     "httpx": "^2.1.1",
@@ -22,7 +21,9 @@
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
+    "babel-register": "^6.24.1",
     "coveralls": "^2.13.0",
     "doxmate": "^0.3.1",
     "eslint": "^3.19.0",
@@ -30,5 +31,10 @@
     "git-pre-hooks": "^1.2.0",
     "mocha": "^3.3.0",
     "nyc": "^10.2.0"
-  }
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "es5"
+  ]
 }

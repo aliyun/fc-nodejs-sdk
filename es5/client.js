@@ -1,34 +1,16 @@
 'use strict';
 
-var _assign = require('babel-runtime/core-js/object/assign');
-
-var _assign2 = _interopRequireDefault(_assign);
-
 var _regenerator = require('babel-runtime/regenerator');
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
 
-var _stringify = require('babel-runtime/core-js/json/stringify');
-
-var _stringify2 = _interopRequireDefault(_stringify);
-
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = require('babel-runtime/helpers/createClass');
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _keys = require('babel-runtime/core-js/object/keys');
-
-var _keys2 = _interopRequireDefault(_keys);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var querystring = require('querystring');
 var crypto = require('crypto');
@@ -40,7 +22,7 @@ var pkg = require('../package.json');
 
 function buildCanonicalHeaders(headers, prefix) {
   var list = [];
-  var keys = (0, _keys2.default)(headers);
+  var keys = Object.keys(headers);
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
     if (key.startsWith(prefix)) {
@@ -52,7 +34,7 @@ function buildCanonicalHeaders(headers, prefix) {
   var canonical = '';
   for (var _i = 0; _i < list.length; _i++) {
     var _key = list[_i];
-    canonical += _key + ':' + headers[_key] + '\n';
+    canonical += `${_key}:${headers[_key]}\n`;
   }
 
   return canonical;
@@ -63,7 +45,7 @@ function composeStringToSign(method, path, headers) {
   var contentType = headers['content-type'] || '';
   var date = headers['date'];
   var signHeaders = buildCanonicalHeaders(headers, 'x-fc');
-  return method + '\n' + contentMD5 + '\n' + contentType + '\n' + date + '\n' + signHeaders + path;
+  return `${method}\n${contentMD5}\n${contentType}\n${date}\n${signHeaders}${path}`;
 }
 
 function signString(source, secret) {
@@ -73,7 +55,7 @@ function signString(source, secret) {
 
 var Client = function () {
   function Client(accountid, config) {
-    (0, _classCallCheck3.default)(this, Client);
+    _classCallCheck(this, Client);
 
     if (!accountid) {
       throw new TypeError('"accountid" must be passed in');
@@ -107,13 +89,13 @@ var Client = function () {
 
     var internal = config.internal ? '-internal' : '';
 
-    this.endpoint = protocol + '://' + accountid + '.fc.' + region + internal + '.aliyuncs.com';
-    this.host = accountid + '.fc.' + region + internal + '.aliyuncs.com';
+    this.endpoint = `${protocol}://${accountid}.fc.${region}${internal}.aliyuncs.com`;
+    this.host = `${accountid}.fc.${region}${internal}.aliyuncs.com`;
     this.version = '2016-08-15';
     this.timeout = 10000; // 10s
   }
 
-  (0, _createClass3.default)(Client, [{
+  _createClass(Client, [{
     key: 'buildHeaders',
     value: function buildHeaders() {
       var now = new Date();
@@ -121,7 +103,7 @@ var Client = function () {
         'accept': 'application/json',
         'date': now.toUTCString(),
         'host': this.host,
-        'user-agent': 'Node.js(' + process.version + ') OS(' + process.platform + '/' + process.arch + ') SDK(' + pkg.name + '@v' + pkg.version + ')',
+        'user-agent': `Node.js(${process.version}) OS(${process.platform}/${process.arch}) SDK(${pkg.name}@v${pkg.version})`,
         'x-fc-account-id': this.accountid
       };
 
@@ -133,16 +115,16 @@ var Client = function () {
   }, {
     key: 'request',
     value: function () {
-      var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(method, path, query, body) {
+      var _ref = _asyncToGenerator(_regenerator2.default.mark(function _callee(method, path, query, body) {
         var url, headers, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                url = this.endpoint + '/' + this.version + path;
+                url = `${this.endpoint}/${this.version}${path}`;
 
-                if (query && (0, _keys2.default)(query).length > 0) {
-                  url = url + '?' + querystring.stringify(query);
+                if (query && Object.keys(query).length > 0) {
+                  url = `${url}?${querystring.stringify(query)}`;
                 }
 
                 headers = this.buildHeaders();
@@ -159,7 +141,7 @@ var Client = function () {
                     buff = new Buffer(body, 'utf8');
                     headers['content-type'] = 'application/octet-stream';
                   } else {
-                    buff = new Buffer((0, _stringify2.default)(body), 'utf8');
+                    buff = new Buffer(JSON.stringify(body), 'utf8');
                     headers['content-type'] = 'application/json';
                   }
                   digest = kitx.md5(buff, 'hex');
@@ -170,20 +152,20 @@ var Client = function () {
                   postBody = buff;
                 }
 
-                stringToSign = composeStringToSign(method, '/' + this.version + path, headers);
+                stringToSign = composeStringToSign(method, `/${this.version}${path}`, headers);
 
                 debug('stringToSign: %s', stringToSign);
                 signature = signString(stringToSign, this.accessKeySecret);
 
-                headers['authorization'] = 'FC ' + this.accessKeyID + ':' + signature;
+                headers['authorization'] = `FC ${this.accessKeyID}:${signature}`;
 
                 debug('request headers: %j', headers);
 
                 _context.next = 11;
                 return httpx.request(url, {
-                  method: method,
+                  method,
                   timeout: this.timeout,
-                  headers: headers,
+                  headers,
                   data: postBody
                 });
 
@@ -229,9 +211,9 @@ var Client = function () {
 
                 code = response.statusCode;
                 requestid = response.headers['x-fc-request-id'];
-                err = new Error(method + ' ' + path + ' failed with ' + code + '. requestid: ' + requestid + ', message: ' + responseBody.ErrorMessage + '.');
+                err = new Error(`${method} ${path} failed with ${code}. requestid: ${requestid}, message: ${responseBody.ErrorMessage}.`);
 
-                err.name = 'FC' + responseBody.ErrorCode + 'Error';
+                err.name = `FC${responseBody.ErrorCode}Error`;
                 err.code = responseBody.ErrorCode;
                 throw err;
 
@@ -271,8 +253,8 @@ var Client = function () {
     value: function createService(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      return this.request('POST', '/services', null, (0, _assign2.default)({
-        serviceName: serviceName
+      return this.request('POST', '/services', null, Object.assign({
+        serviceName
       }, options));
     }
 
@@ -307,7 +289,7 @@ var Client = function () {
   }, {
     key: 'getService',
     value: function getService(serviceName) {
-      return this.request('GET', '/services/' + serviceName, null);
+      return this.request('GET', `/services/${serviceName}`, null);
     }
 
     /**
@@ -328,7 +310,7 @@ var Client = function () {
     value: function updateService(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      return this.request('PUT', '/services/' + serviceName, null, options);
+      return this.request('PUT', `/services/${serviceName}`, null, options);
     }
 
     /**
@@ -343,7 +325,7 @@ var Client = function () {
     value: function deleteService(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      return this.request('DELETE', '/services/' + serviceName, null, options);
+      return this.request('DELETE', `/services/${serviceName}`, null, options);
     }
 
     /**
@@ -366,7 +348,7 @@ var Client = function () {
   }, {
     key: 'createFunction',
     value: function createFunction(serviceName, options) {
-      return this.request('POST', '/services/' + serviceName + '/functions', null, options);
+      return this.request('POST', `/services/${serviceName}/functions`, null, options);
     }
 
     /**
@@ -388,7 +370,7 @@ var Client = function () {
     value: function listFunctions(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      return this.request('GET', '/services/' + serviceName + '/functions', options);
+      return this.request('GET', `/services/${serviceName}/functions`, options);
     }
 
     /**
@@ -402,7 +384,7 @@ var Client = function () {
   }, {
     key: 'getFunction',
     value: function getFunction(serviceName, functionName) {
-      return this.request('GET', '/services/' + serviceName + '/functions/' + functionName);
+      return this.request('GET', `/services/${serviceName}/functions/${functionName}`);
     }
 
     /**
@@ -416,7 +398,7 @@ var Client = function () {
   }, {
     key: 'getFunctionCode',
     value: function getFunctionCode(serviceName, functionName) {
-      return this.request('GET', '/services/' + serviceName + '/functions/' + functionName + '/code');
+      return this.request('GET', `/services/${serviceName}/functions/${functionName}/code`);
     }
 
     /**
@@ -431,7 +413,7 @@ var Client = function () {
   }, {
     key: 'updateFunction',
     value: function updateFunction(serviceName, functionName, options) {
-      return this.request('PUT', '/services/' + serviceName + '/functions/' + functionName, null, options);
+      return this.request('PUT', `/services/${serviceName}/functions/${functionName}`, null, options);
     }
 
     /**
@@ -447,7 +429,7 @@ var Client = function () {
     value: function deleteFunction(serviceName, functionName) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-      return this.request('DELETE', '/services/' + serviceName + '/functions/' + functionName, options);
+      return this.request('DELETE', `/services/${serviceName}/functions/${functionName}`, options);
     }
 
     /**
@@ -465,7 +447,7 @@ var Client = function () {
       if (event && typeof event !== 'string' && !Buffer.isBuffer(event)) {
         throw new TypeError('"event" must be String or Buffer');
       }
-      return this.request('POST', '/services/' + serviceName + '/functions/' + functionName + '/invocations', null, event);
+      return this.request('POST', `/services/${serviceName}/functions/${functionName}/invocations`, null, event);
     }
 
     /**
@@ -487,7 +469,7 @@ var Client = function () {
   }, {
     key: 'createTrigger',
     value: function createTrigger(serviceName, functionName, options) {
-      return this.request('POST', '/services/' + serviceName + '/functions/' + functionName + '/triggers', null, options);
+      return this.request('POST', `/services/${serviceName}/functions/${functionName}/triggers`, null, options);
     }
 
     /**
@@ -510,7 +492,7 @@ var Client = function () {
     value: function listTriggers(serviceName, functionName) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-      return this.request('GET', '/services/' + serviceName + '/functions/' + functionName + '/triggers', options);
+      return this.request('GET', `/services/${serviceName}/functions/${functionName}/triggers`, options);
     }
 
     /**
@@ -525,7 +507,7 @@ var Client = function () {
   }, {
     key: 'getTrigger',
     value: function getTrigger(serviceName, functionName, triggerName) {
-      return this.request('GET', '/services/' + serviceName + '/functions/' + functionName + '/triggers/' + triggerName);
+      return this.request('GET', `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`);
     }
 
     /**
@@ -541,7 +523,7 @@ var Client = function () {
   }, {
     key: 'updateTrigger',
     value: function updateTrigger(serviceName, functionName, triggerName, options) {
-      return this.request('PUT', '/services/' + serviceName + '/functions/' + functionName + '/triggers/' + triggerName, null, options);
+      return this.request('PUT', `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`, null, options);
     }
 
     /**
@@ -556,9 +538,10 @@ var Client = function () {
   }, {
     key: 'deleteTrigger',
     value: function deleteTrigger(serviceName, functionName, triggerName, options) {
-      return this.request('DELETE', '/services/' + serviceName + '/functions/' + functionName + '/triggers/' + triggerName, null, options);
+      return this.request('DELETE', `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`, null, options);
     }
   }]);
+
   return Client;
 }();
 
