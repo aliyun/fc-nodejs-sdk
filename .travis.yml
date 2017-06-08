@@ -1,7 +1,7 @@
 language: node_js
 
 node_js:
-  - "7"
+  - "8"
   - "6"
   - "4"
 
@@ -15,7 +15,7 @@ matrix:
       env: TEST_COV=true
     - node_js: "6"
       env: TEST_COV=true
-    - node_js: "7"
+    - node_js: "8"
       env: TEST_COV=false
 
 script:
