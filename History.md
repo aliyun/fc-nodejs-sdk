@@ -1,4 +1,11 @@
 
+1.1.1 / 2017-06-08
+==================
+
+  * Fix test case
+  * Make the es5 output more pretty
+  * Use node 8 instead of 7 in travis CI
+
 1.1.0 / 2017-05-27
 ==================
 
