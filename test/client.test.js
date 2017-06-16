@@ -41,11 +41,27 @@ describe('client test', function () {
       });
     }).to.throwException(/"config.region" must be passed in/);
 
+    expect(() => {
+      new FunctionComputeClient('accountid', {
+        accessKeyID: 'STS.accessKeyID',
+        accessKeySecret: 'accessKeySecret',
+        region: 'cn-shanghai',
+      });
+    }).to.throwException(/"config.securityToken" must be passed in for STS/);
+
     var client;
     client = new FunctionComputeClient('accountid', {
       accessKeyID: 'accessKeyID',
       accessKeySecret: 'accessKeySecret',
       region: 'cn-shanghai'
+    });
+    expect(client.endpoint).to.be('http://accountid.fc.cn-shanghai.aliyuncs.com');
+
+    client = new FunctionComputeClient('accountid', {
+      accessKeyID: 'STS.accessKeyID',
+      accessKeySecret: 'accessKeySecret',
+      region: 'cn-shanghai',
+      securityToken: 'securityToken',
     });
     expect(client.endpoint).to.be('http://accountid.fc.cn-shanghai.aliyuncs.com');
 
@@ -319,6 +335,8 @@ describe('client test', function () {
       });
       expect(trigger).to.be.ok();
       expect(trigger).to.have.property('triggerName', triggerName);
+      // sleep a while for trigger meta to sync
+      await new Promise(res => setTimeout(res, 30 * 1000));
     });
 
     it('listTriggers should ok', async function() {

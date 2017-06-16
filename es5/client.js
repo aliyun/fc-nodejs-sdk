@@ -73,6 +73,13 @@ var Client = function () {
 
     this.accessKeyID = accessKeyID;
 
+    if (this.accessKeyID.startsWith('STS')) {
+      this.securityToken = config.securityToken;
+      if (!this.securityToken) {
+        throw new TypeError('"config.securityToken" must be passed in for STS');
+      }
+    }
+
     var accessKeySecret = config.accessKeySecret;
     if (!accessKeySecret) {
       throw new TypeError('"config.accessKeySecret" must be passed in');
