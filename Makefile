@@ -1,6 +1,6 @@
 TESTS = test/*.test.js
 REPORTER = spec
-TIMEOUT = 20000
+TIMEOUT = 60000
 PATH := ./node_modules/.bin:$(PATH)
 
 lint:
