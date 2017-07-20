@@ -1,4 +1,10 @@
 
+1.2.0 / 2017-07-20
+==================
+
+  * Add custom header supports
+  * Add directores, repository, bugs, homepage properties for package.json
+
 1.1.2 / 2017-06-16
 ==================
 
