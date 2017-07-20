@@ -123,7 +123,8 @@ var Client = function () {
     key: 'request',
     value: function () {
       var _ref = _asyncToGenerator(_regenerator2.default.mark(function _callee(method, path, query, body) {
-        var url, headers, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
+        var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+        var url, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -134,7 +135,7 @@ var Client = function () {
                   url = `${url}?${querystring.stringify(query)}`;
                 }
 
-                headers = this.buildHeaders();
+                headers = Object.assign(this.buildHeaders(), headers);
 
 
                 if (body) {
@@ -235,12 +236,72 @@ var Client = function () {
         }, _callee, this, [[20, 24]]);
       }));
 
-      function request(_x, _x2, _x3, _x4) {
+      function request(_x2, _x3, _x4, _x5) {
         return _ref.apply(this, arguments);
       }
 
       return request;
     }()
+
+    /**
+     * GET 请求
+     *
+     * @param {String} path 请求路径
+     * @param {Object} query 请求中的 query 部分
+     * @param {Object} headers 请求中的自定义 headers 部分
+     * @return {Promise} 返回 Response
+     */
+
+  }, {
+    key: 'get',
+    value: function get(path, query, headers) {
+      return this.request('GET', path, query, null, headers);
+    }
+
+    /**
+     * POST 请求
+     *
+     * @param {String} path 请求路径
+     * @param {Buffer|String|Object} body 请求中的 body 部分
+     * @param {Object} headers 请求中的自定义 headers 部分
+     * @return {Promise} 返回 Response
+     */
+
+  }, {
+    key: 'post',
+    value: function post(path, body, headers) {
+      return this.request('POST', path, null, body, headers);
+    }
+
+    /**
+     * PUT 请求
+     *
+     * @param {String} path 请求路径
+     * @param {Buffer|String|Object} body 请求中的 body 部分
+     * @param {Object} headers 请求中的自定义 headers 部分
+     * @return {Promise} 返回 Response
+     */
+
+  }, {
+    key: 'put',
+    value: function put(path, body, headers) {
+      return this.request('PUT', path, null, body, headers);
+    }
+
+    /**
+     * DELETE 请求
+     *
+     * @param {String} path 请求路径
+     * @param {Object} query 请求中的 query 部分
+     * @param {Object} headers 请求中的自定义 headers 部分
+     * @return {Promise} 返回 Response
+     */
+
+  }, {
+    key: 'delete',
+    value: function _delete(path, query, headers) {
+      return this.request('DELETE', path, query, null, headers);
+    }
 
     /**
      * 创建Service
@@ -259,10 +320,11 @@ var Client = function () {
     key: 'createService',
     value: function createService(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments[2];
 
-      return this.request('POST', '/services', null, Object.assign({
+      return this.post('/services', Object.assign({
         serviceName
-      }, options));
+      }, options), headers);
     }
 
     /**
@@ -282,8 +344,9 @@ var Client = function () {
     key: 'listServices',
     value: function listServices() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments[1];
 
-      return this.request('GET', '/services', options);
+      return this.get('/services', options, headers);
     }
 
     /**
@@ -295,8 +358,8 @@ var Client = function () {
 
   }, {
     key: 'getService',
-    value: function getService(serviceName) {
-      return this.request('GET', `/services/${serviceName}`, null);
+    value: function getService(serviceName, headers) {
+      return this.get(`/services/${serviceName}`, null, headers);
     }
 
     /**
@@ -316,8 +379,9 @@ var Client = function () {
     key: 'updateService',
     value: function updateService(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments[2];
 
-      return this.request('PUT', `/services/${serviceName}`, null, options);
+      return this.put(`/services/${serviceName}`, options, headers);
     }
 
     /**
@@ -331,8 +395,9 @@ var Client = function () {
     key: 'deleteService',
     value: function deleteService(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments[2];
 
-      return this.request('DELETE', `/services/${serviceName}`, null, options);
+      return this.delete(`/services/${serviceName}`, null, options, headers);
     }
 
     /**
@@ -354,8 +419,8 @@ var Client = function () {
 
   }, {
     key: 'createFunction',
-    value: function createFunction(serviceName, options) {
-      return this.request('POST', `/services/${serviceName}/functions`, null, options);
+    value: function createFunction(serviceName, options, headers) {
+      return this.post(`/services/${serviceName}/functions`, options, headers);
     }
 
     /**
@@ -376,8 +441,9 @@ var Client = function () {
     key: 'listFunctions',
     value: function listFunctions(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments[2];
 
-      return this.request('GET', `/services/${serviceName}/functions`, options);
+      return this.get(`/services/${serviceName}/functions`, options, headers);
     }
 
     /**
@@ -390,8 +456,8 @@ var Client = function () {
 
   }, {
     key: 'getFunction',
-    value: function getFunction(serviceName, functionName) {
-      return this.request('GET', `/services/${serviceName}/functions/${functionName}`);
+    value: function getFunction(serviceName, functionName, headers) {
+      return this.get(`/services/${serviceName}/functions/${functionName}`, null, headers);
     }
 
     /**
@@ -404,8 +470,8 @@ var Client = function () {
 
   }, {
     key: 'getFunctionCode',
-    value: function getFunctionCode(serviceName, functionName) {
-      return this.request('GET', `/services/${serviceName}/functions/${functionName}/code`);
+    value: function getFunctionCode(serviceName, functionName, headers) {
+      return this.get(`/services/${serviceName}/functions/${functionName}/code`, headers);
     }
 
     /**
@@ -419,8 +485,9 @@ var Client = function () {
 
   }, {
     key: 'updateFunction',
-    value: function updateFunction(serviceName, functionName, options) {
-      return this.request('PUT', `/services/${serviceName}/functions/${functionName}`, null, options);
+    value: function updateFunction(serviceName, functionName, options, headers) {
+      var path = `/services/${serviceName}/functions/${functionName}`;
+      return this.put(path, options, headers);
     }
 
     /**
@@ -435,8 +502,10 @@ var Client = function () {
     key: 'deleteFunction',
     value: function deleteFunction(serviceName, functionName) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var headers = arguments[3];
 
-      return this.request('DELETE', `/services/${serviceName}/functions/${functionName}`, options);
+      var path = `/services/${serviceName}/functions/${functionName}`;
+      return this.delete(path, options, headers);
     }
 
     /**
@@ -451,10 +520,13 @@ var Client = function () {
   }, {
     key: 'invokeFunction',
     value: function invokeFunction(serviceName, functionName, event) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
       if (event && typeof event !== 'string' && !Buffer.isBuffer(event)) {
         throw new TypeError('"event" must be String or Buffer');
       }
-      return this.request('POST', `/services/${serviceName}/functions/${functionName}/invocations`, null, event);
+      var path = `/services/${serviceName}/functions/${functionName}/invocations`;
+      return this.post(path, event, headers);
     }
 
     /**
@@ -475,8 +547,9 @@ var Client = function () {
 
   }, {
     key: 'createTrigger',
-    value: function createTrigger(serviceName, functionName, options) {
-      return this.request('POST', `/services/${serviceName}/functions/${functionName}/triggers`, null, options);
+    value: function createTrigger(serviceName, functionName, options, headers) {
+      var path = `/services/${serviceName}/functions/${functionName}/triggers`;
+      return this.post(path, options, headers);
     }
 
     /**
@@ -498,8 +571,10 @@ var Client = function () {
     key: 'listTriggers',
     value: function listTriggers(serviceName, functionName) {
       var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var headers = arguments[3];
 
-      return this.request('GET', `/services/${serviceName}/functions/${functionName}/triggers`, options);
+      var path = `/services/${serviceName}/functions/${functionName}/triggers`;
+      return this.get(path, options, headers);
     }
 
     /**
@@ -513,8 +588,9 @@ var Client = function () {
 
   }, {
     key: 'getTrigger',
-    value: function getTrigger(serviceName, functionName, triggerName) {
-      return this.request('GET', `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`);
+    value: function getTrigger(serviceName, functionName, triggerName, headers) {
+      var path = `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`;
+      return this.get(path, null, headers);
     }
 
     /**
@@ -529,8 +605,9 @@ var Client = function () {
 
   }, {
     key: 'updateTrigger',
-    value: function updateTrigger(serviceName, functionName, triggerName, options) {
-      return this.request('PUT', `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`, null, options);
+    value: function updateTrigger(serviceName, functionName, triggerName, options, headers) {
+      var path = `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`;
+      return this.put(path, options, headers);
     }
 
     /**
@@ -544,8 +621,9 @@ var Client = function () {
 
   }, {
     key: 'deleteTrigger',
-    value: function deleteTrigger(serviceName, functionName, triggerName, options) {
-      return this.request('DELETE', `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`, null, options);
+    value: function deleteTrigger(serviceName, functionName, triggerName, options, headers) {
+      var path = `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`;
+      return this.delete(path, options, headers);
     }
   }]);
 
