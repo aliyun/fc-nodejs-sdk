@@ -36,5 +36,18 @@
     "index.js",
     "lib",
     "es5"
-  ]
+  ],
+  "directories": {
+    "doc": "doc",
+    "lib": "lib",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aliyun/fc-nodejs-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aliyun/fc-nodejs-sdk/issues"
+  },
+  "homepage": "https://github.com/aliyun/fc-nodejs-sdk#readme"
 }
