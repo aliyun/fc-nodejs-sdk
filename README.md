@@ -105,6 +105,14 @@ async function test () {
 test().then();
 ```
 
+### Custom headers
+
+```js
+await client.invokeFunction(serviceName, funcName, 'event', {
+  'x-fc-invocation-type': 'Async'
+});
+```
+
 ## API Spec
 
 See: https://help.aliyun.com/document_detail/52877.html
