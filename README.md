@@ -37,6 +37,7 @@ var client = new FCClient('<account id>', {
   accessKeyID: '<access key id>',
   accessKeySecret: '<access key secret>',
   region: 'cn-shanghai',
+  timeout: 10000 // Request timeout in milliseconds, default is 10s
 });
 
 var serviceName = '<service name>';
