@@ -81,6 +81,14 @@ describe('client test', function () {
       internal: true
     });
     expect(client.endpoint).to.be('https://accountid.fc.cn-shanghai-internal.aliyuncs.com');
+
+    client = new FunctionComputeClient('accountid', {
+      accessKeyID: 'accessKeyID',
+      accessKeySecret: 'accessKeySecret',
+      region: 'cn-shanghai',
+      timeout: 20000
+    });
+    expect(client.timeout).to.be(20000);
   });
 
   it('listServices with invalid accessKeyID', function () {
@@ -113,6 +121,23 @@ describe('client test', function () {
         expect(ex.message).to.match(/GET \/services failed with 403\. requestid: .{36}, message: signature does not match\./);
       }
     })();
+  });
+
+  describe('request', function () {
+    it('accepts timeout', async function () {
+      var client = new FunctionComputeClient(ACCOUNT_ID, {
+        accessKeyID: ACCESS_KEY_ID,
+        accessKeySecret: ACCESS_KEY_SECRET,
+        region: 'cn-shanghai',
+        timeout: 1
+      });
+
+      try {
+        await client.listServices();
+      } catch (ex) {
+        expect(ex.name).to.be('RequestTimeoutError');
+      }
+    });
   });
 
   describe('service should ok', function () {
