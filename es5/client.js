@@ -99,7 +99,7 @@ var Client = function () {
     this.endpoint = `${protocol}://${accountid}.fc.${region}${internal}.aliyuncs.com`;
     this.host = `${accountid}.fc.${region}${internal}.aliyuncs.com`;
     this.version = '2016-08-15';
-    this.timeout = 10000; // 10s
+    this.timeout = Number.isFinite(config.timeout) ? config.timeout : 10000; // default is 10s
   }
 
   _createClass(Client, [{
