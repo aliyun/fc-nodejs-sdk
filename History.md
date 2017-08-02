@@ -1,4 +1,11 @@
 
+1.2.1 / 2017-08-02
+==================
+
+  * regenerate for es5
+  * client.request should accept timeout
+  * Update README
+
 1.2.0 / 2017-07-20
 ==================
 
