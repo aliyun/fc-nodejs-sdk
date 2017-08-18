@@ -23,10 +23,15 @@ var pkg = require('../package.json');
 function buildCanonicalHeaders(headers, prefix) {
   var list = [];
   var keys = Object.keys(headers);
+
+  var fcHeaders = {};
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
-    if (key.startsWith(prefix)) {
-      list.push(key);
+
+    var lowerKey = key.toLowerCase().trim();
+    if (lowerKey.startsWith(prefix)) {
+      list.push(lowerKey);
+      fcHeaders[lowerKey] = headers[key];
     }
   }
   list.sort();
@@ -34,7 +39,7 @@ function buildCanonicalHeaders(headers, prefix) {
   var canonical = '';
   for (var _i = 0; _i < list.length; _i++) {
     var _key = list[_i];
-    canonical += `${_key}:${headers[_key]}\n`;
+    canonical += `${_key}:${fcHeaders[_key]}\n`;
   }
 
   return canonical;
@@ -122,7 +127,7 @@ var Client = function () {
   }, {
     key: 'request',
     value: function () {
-      var _ref = _asyncToGenerator(_regenerator2.default.mark(function _callee(method, path, query, body) {
+      var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var url, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
