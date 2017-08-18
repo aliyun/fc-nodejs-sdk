@@ -289,6 +289,13 @@ describe('client test', function () {
       expect(response).to.be('');
     });
 
+    it('invokeFunction async with upper case header should ok', async function() {
+      const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {
+        'X-Fc-Invocation-Type': 'Async'
+      });
+      expect(response).to.be('');
+    });
+
     it('invokeFunction with invalid event should fail', async function() {
       expect(() => {
         client.invokeFunction(serviceName, functionName, {
