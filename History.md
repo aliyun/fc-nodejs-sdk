@@ -1,4 +1,9 @@
 
+1.2.2 / 2017-08-18
+==================
+
+  * feat: support invoke function with upper case `x-fc` header
+
 1.2.1 / 2017-08-02
 ==================
 
