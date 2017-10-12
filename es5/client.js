@@ -101,8 +101,8 @@ var Client = function () {
 
     var internal = config.internal ? '-internal' : '';
 
-    this.endpoint = `${protocol}://${accountid}.fc.${region}${internal}.aliyuncs.com`;
-    this.host = `${accountid}.fc.${region}${internal}.aliyuncs.com`;
+    this.endpoint = `${protocol}://${accountid}.${region}${internal}.fc.aliyuncs.com`;
+    this.host = `${accountid}.${region}${internal}.fc.aliyuncs.com`;
     this.version = '2016-08-15';
     this.timeout = Number.isFinite(config.timeout) ? config.timeout : 10000; // default is 10s
   }
