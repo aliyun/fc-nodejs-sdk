@@ -55,7 +55,7 @@ describe('client test', function () {
       accessKeySecret: 'accessKeySecret',
       region: 'cn-shanghai'
     });
-    expect(client.endpoint).to.be('http://accountid.fc.cn-shanghai.aliyuncs.com');
+    expect(client.endpoint).to.be('http://accountid.cn-shanghai.fc.aliyuncs.com');
 
     client = new FunctionComputeClient('accountid', {
       accessKeyID: 'STS.accessKeyID',
@@ -63,7 +63,7 @@ describe('client test', function () {
       region: 'cn-shanghai',
       securityToken: 'securityToken',
     });
-    expect(client.endpoint).to.be('http://accountid.fc.cn-shanghai.aliyuncs.com');
+    expect(client.endpoint).to.be('http://accountid.cn-shanghai.fc.aliyuncs.com');
 
     client = new FunctionComputeClient('accountid', {
       accessKeyID: 'accessKeyID',
@@ -71,7 +71,7 @@ describe('client test', function () {
       region: 'cn-shanghai',
       secure: true
     });
-    expect(client.endpoint).to.be('https://accountid.fc.cn-shanghai.aliyuncs.com');
+    expect(client.endpoint).to.be('https://accountid.cn-shanghai.fc.aliyuncs.com');
 
     client = new FunctionComputeClient('accountid', {
       accessKeyID: 'accessKeyID',
@@ -80,7 +80,7 @@ describe('client test', function () {
       secure: true,
       internal: true
     });
-    expect(client.endpoint).to.be('https://accountid.fc.cn-shanghai-internal.aliyuncs.com');
+    expect(client.endpoint).to.be('https://accountid.cn-shanghai-internal.fc.aliyuncs.com');
 
     client = new FunctionComputeClient('accountid', {
       accessKeyID: 'accessKeyID',
