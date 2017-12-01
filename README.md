@@ -14,11 +14,34 @@ fc-nodejs-sdk
 
 Documents: http://doxmate.cool/aliyun/fc-nodejs-sdk/api.html
 
-## Install
+Notice
+-------------------
+We suggest using fc2，The main difference between fc and fc2 is:
+
+The response returned by the user is the following dict, for invoke function, data is bytes, for other apis, data is dict.
+
+```js
+{
+     'headers': headers,
+     'data': data,
+}
+
+```
+
+Install the official fc2 release version:
+
+```bash
+npm install @alicloud/fc2 --save
+```
+
+## Install oldVersion
+
+fc version is in 1.x branch， you can install fc use 'npm' like this
 
 ```bash
 npm install @alicloud/fc --save
 ```
+
 
 ## License
 
@@ -31,7 +54,7 @@ npm install @alicloud/fc --save
 ```js
 'use strict';
 
-var FCClient = require('@alicloud/fc');
+var FCClient = require('@alicloud/fc2');
 
 var client = new FCClient('<account id>', {
   accessKeyID: '<access key id>',
@@ -69,7 +92,7 @@ client.createService(serviceName).then(function(resp) {
 ```js
 'use strict';
 
-const FCClient = require('@alicloud/fc');
+const FCClient = require('@alicloud/fc2');
 
 var client = new FCClient('<account id>', {
   accessKeyID: '<access key id>',
