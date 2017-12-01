@@ -104,7 +104,7 @@ var Client = function () {
     this.endpoint = `${protocol}://${accountid}.${region}${internal}.fc.aliyuncs.com`;
     this.host = `${accountid}.${region}${internal}.fc.aliyuncs.com`;
     this.version = '2016-08-15';
-    this.timeout = Number.isFinite(config.timeout) ? config.timeout : 10000; // default is 10s
+    this.timeout = Number.isFinite(config.timeout) ? config.timeout : 60000; // default is 60s
   }
 
   _createClass(Client, [{
@@ -127,7 +127,7 @@ var Client = function () {
   }, {
     key: 'request',
     value: function () {
-      var _ref = _asyncToGenerator(_regenerator2.default.mark(function _callee(method, path, query, body) {
+      var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var url, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
@@ -231,7 +231,10 @@ var Client = function () {
                 throw err;
 
               case 34:
-                return _context.abrupt('return', responseBody);
+                return _context.abrupt('return', {
+                  'headers': response.headers,
+                  'data': responseBody
+                });
 
               case 35:
               case 'end':
@@ -318,7 +321,7 @@ var Client = function () {
      *
      * @param {String} serviceName 服务名
      * @param {Object} options 选项，optional
-     * @return {Promise} 返回 ServiceResponse
+     * @return {Promise} 返回 Object(包含headers和data属性[ServiceResponse])
      */
 
   }, {
@@ -342,7 +345,7 @@ var Client = function () {
      * - nextToken
      *
      * @param {Object} options 选项，optional
-     * @return {Promise} 返回 Service 列表
+     * @return {Promise} 返回 Object(包含headers和data属性[Service 列表])
      */
 
   }, {
@@ -358,7 +361,7 @@ var Client = function () {
      * 获取service信息
      *
      * @param {String} serviceName
-     * @return {Promise} 返回 Service 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Service 信息])
      */
 
   }, {
@@ -377,7 +380,7 @@ var Client = function () {
      *
      * @param {String} serviceName 服务名
      * @param {Object} options 选项，optional
-     * @return {Promise} 返回 Service 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Service 信息])
      */
 
   }, {
@@ -393,7 +396,7 @@ var Client = function () {
      * 删除Service
      *
      * @param {String} serviceName
-     * @return {Promise}
+     * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
   }, {
@@ -439,7 +442,7 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {Object} options 选项，optional
-     * @return {Promise} 返回Function列表
+     * @return {Promise} 返回 Object(包含headers和data属性[Function列表])
      */
 
   }, {
@@ -456,7 +459,7 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {String} functionName
-     * @return {Promise} 返回 Function 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Function信息])
      */
 
   }, {
@@ -470,7 +473,7 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {String} functionName
-     * @return {Promise} 返回 Function Code 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Function信息])
      */
 
   }, {
@@ -485,7 +488,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} options Function配置，见createFunction
-     * @return {Promise} 返回 Function 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Function信息])
      */
 
   }, {
@@ -500,7 +503,7 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {String} functionName
-     * @return {Promise}
+     * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
   }, {
@@ -519,7 +522,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} event event信息
-     * @return {Promise} 返回Function的执行结果
+     * @return {Promise} 返回 Object(包含headers和data属性[返回Function的执行结果]) 
      */
 
   }, {
@@ -547,7 +550,7 @@ var Client = function () {
      * @param {String} serviceName 服务名
      * @param {String} functionName 服务名
      * @param {Object} options Trigger配置
-     * @return {Promise} 返回 Trigger 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息]) 
      */
 
   }, {
@@ -569,7 +572,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} options 选项，optional
-     * @return {Promise} 返回Trigger列表
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger列表]) 
      */
 
   }, {
@@ -588,7 +591,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {String} triggerName
-     * @return {Promise} 返回 Trigger 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息]) 
      */
 
   }, {
@@ -605,7 +608,7 @@ var Client = function () {
      * @param {String} functionName
      * @param {String} triggerName
      * @param {Object} options Trigger配置，见createTrigger
-     * @return {Promise} 返回 Trigger 信息
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息]) 
      */
 
   }, {
@@ -621,7 +624,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {String} triggerName
-     * @return {Promise}
+     * @return {Promise} 返回 Object(包含headers和data属性) 
      */
 
   }, {

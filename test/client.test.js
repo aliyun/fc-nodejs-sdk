@@ -151,14 +151,14 @@ describe('client test', function () {
     before(async function () {
       // clean up
       const response = await client.listServices();
-      for (var i = 0; i < response.services.length; i++) {
-        const service = response.services[i];
+      for (var i = 0; i < response.data.services.length; i++) {
+        const service = response.data.services[i];
         // Only delete test service
         if (service.serviceName === serviceName) {
           const res = await client.listFunctions(service.serviceName);
           // clean up functions
-          for (var j = 0; j < res.functions.length; j++) {
-            const fun = res.functions[j];
+          for (var j = 0; j < res.data.functions.length; j++) {
+            const fun = res.data.functions[j];
             await client.deleteFunction(service.serviceName, fun.functionName);
           }
           await client.deleteService(service.serviceName);
@@ -168,33 +168,33 @@ describe('client test', function () {
 
     it('createService should ok', async function() {
       const service = await client.createService(serviceName);
-      expect(service).to.be.ok();
-      expect(service).to.have.property('serviceName', serviceName);
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
     });
 
     it('listServices should ok', async function() {
       const response = await client.listServices();
-      expect(response).to.be.ok();
-      expect(response.services).to.be.ok();
-      expect(response.services.length).to.above(0);
-      const [service] = response.services;
+      expect(response.data).to.be.ok();
+      expect(response.data.services).to.be.ok();
+      expect(response.data.services.length).to.above(0);
+      const [service] = response.data.services;
       expect(service).to.have.property('serviceName');
     });
 
     it('getService should ok', async function() {
       const service = await client.getService(serviceName);
-      expect(service).to.be.ok();
-      expect(service).to.have.property('serviceName', serviceName);
-      expect(service).to.have.property('description', '');
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
+      expect(service.data).to.have.property('description', '');
     });
 
     it('updateService should ok', async function() {
       const service = await client.updateService(serviceName, {
         description: 'this is test update service'
       });
-      expect(service).to.be.ok();
-      expect(service).to.have.property('serviceName', serviceName);
-      expect(service).to.have.property('description', 'this is test update service');
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
+      expect(service.data).to.have.property('description', 'this is test update service');
     });
 
     it('deleteService should ok', async function() {
@@ -214,8 +214,8 @@ describe('client test', function () {
     before(async function () {
       // clean up
       const service = await client.createService(serviceName);
-      expect(service).to.be.ok();
-      expect(service).to.have.property('serviceName', serviceName);
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
     });
 
     after(async function () {
@@ -240,60 +240,60 @@ describe('client test', function () {
           zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
         }
       });
-      expect(func).to.be.ok();
-      expect(func).to.have.property('functionName', functionName);
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', functionName);
     });
 
     it('listFunctions should ok', async function() {
       const response = await client.listFunctions(serviceName);
-      expect(response).to.be.ok();
-      expect(response.functions).to.be.ok();
-      expect(response.functions).to.have.length(1);
-      const [func] = response.functions;
+      expect(response.data).to.be.ok();
+      expect(response.data.functions).to.be.ok();
+      expect(response.data.functions).to.have.length(1);
+      const [func] = response.data.functions;
       expect(func).to.have.property('functionName', functionName);
     });
 
     it('getFunction should ok', async function() {
       const func = await client.getFunction(serviceName, functionName);
-      expect(func).to.have.property('functionName', functionName);
+      expect(func.data).to.have.property('functionName', functionName);
     });
 
     it('getFunctionCode should ok', async function() {
       const code = await client.getFunctionCode(serviceName, functionName);
-      expect(code).to.have.property('url');
-      expect(code).to.have.property('checksum');
+      expect(code.data).to.have.property('url');
+      expect(code.data).to.have.property('checksum');
     });
 
     it('updateFunction should ok', async function() {
       const func = await client.updateFunction(serviceName, functionName, {
         description: 'updated function desc'
       });
-      expect(func).to.have.property('functionName', functionName);
-      expect(func).to.have.property('description', 'updated function desc');
+      expect(func.data).to.have.property('functionName', functionName);
+      expect(func.data).to.have.property('description', 'updated function desc');
     });
 
     it('invokeFunction should ok', async function() {
       const response = await client.invokeFunction(serviceName, functionName, 'world');
-      expect(response).to.be('hello world');
+      expect(response.data).to.be('hello world');
     });
 
     it('invokeFunction should faster', async function() {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'));
-      expect(response).to.be('hello world');
+      expect(response.data).to.be('hello world');
     });
 
     it('invokeFunction async should ok', async function() {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {
         'x-fc-invocation-type': 'Async'
       });
-      expect(response).to.be('');
+      expect(response.data).to.be('');
     });
 
     it('invokeFunction async with upper case header should ok', async function() {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {
         'X-Fc-Invocation-Type': 'Async'
       });
-      expect(response).to.be('');
+      expect(response.data).to.be('');
     });
 
     it('invokeFunction with invalid event should fail', async function() {
@@ -322,8 +322,8 @@ describe('client test', function () {
     before(async function () {
       // clean up
       const service = await client.createService(serviceName);
-      expect(service).to.be.ok();
-      expect(service).to.have.property('serviceName', serviceName);
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
       const func = await client.createFunction(serviceName, {
         functionName: functionName,
         description: 'function desc',
@@ -335,8 +335,8 @@ describe('client test', function () {
           zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
         }
       });
-      expect(func).to.be.ok();
-      expect(func).to.have.property('functionName', functionName);
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', functionName);
     });
 
     after(async function () {
@@ -372,37 +372,38 @@ describe('client test', function () {
           }
         }
       });
-      expect(trigger).to.be.ok();
-      expect(trigger).to.have.property('triggerName', triggerName);
+      expect(trigger.data).to.be.ok();
+      expect(trigger.data).to.have.property('triggerName', triggerName);
       // sleep a while for trigger meta to sync
       await new Promise(res => setTimeout(res, 30 * 1000));
     });
 
     it('listTriggers should ok', async function() {
       const response = await client.listTriggers(serviceName, functionName);
-      expect(response).to.be.ok();
-      expect(response.triggers).to.be.ok();
-      expect(response.triggers).to.have.length(1);
-      const [trigger] = response.triggers;
+      expect(response.data).to.be.ok();
+      expect(response.data.triggers).to.be.ok();
+      expect(response.data.triggers).to.have.length(1);
+      const [trigger] = response.data.triggers;
       expect(trigger).to.have.property('triggerName', triggerName);
     });
 
     it('getTrigger should ok', async function() {
       const trigger = await client.getTrigger(serviceName, functionName, triggerName);
-      expect(trigger).to.have.property('triggerName', triggerName);
+      expect(trigger.data).to.have.property('triggerName', triggerName);
     });
 
     it('updateTrigger should ok', async function() {
       const trigger = await client.updateTrigger(serviceName, functionName, triggerName, {
         invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`,
       });
-      expect(trigger).to.have.property('triggerName', triggerName);
-      expect(trigger).to.have.property('invocationRole', `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`);
+      expect(trigger.data).to.have.property('triggerName', triggerName);
+      expect(trigger.data).to.have.property('invocationRole', `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`);
     });
 
     it('deleteTrigger should ok', async function() {
       await client.deleteTrigger(serviceName, functionName, triggerName);
       // No exception, no failed
     });
+
   });
 });
