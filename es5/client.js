@@ -127,7 +127,7 @@ var Client = function () {
   }, {
     key: 'request',
     value: function () {
-      var _ref = _asyncToGenerator(_regenerator2.default.mark(function _callee(method, path, query, body) {
+      var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var url, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
@@ -428,7 +428,31 @@ var Client = function () {
   }, {
     key: 'createFunction',
     value: function createFunction(serviceName, options, headers) {
+      this.normalizeParams(options);
       return this.post(`/services/${serviceName}/functions`, options, headers);
+    }
+  }, {
+    key: 'normalizeParams',
+    value: function normalizeParams(opts) {
+      if (opts.functionName) {
+        opts.functionName = String(opts.functionName);
+      }
+
+      if (opts.runtime) {
+        opts.runtime = String(opts.runtime);
+      }
+
+      if (opts.handler) {
+        opts.handler = String(opts.handler);
+      }
+
+      if (opts.memorySize) {
+        opts.memorySize = parseInt(opts.memorySize);
+      }
+
+      if (opts.timeout) {
+        opts.timeout = parseInt(opts.timeout);
+      }
     }
 
     /**
@@ -494,6 +518,7 @@ var Client = function () {
   }, {
     key: 'updateFunction',
     value: function updateFunction(serviceName, functionName, options, headers) {
+      this.normalizeParams(options);
       var path = `/services/${serviceName}/functions/${functionName}`;
       return this.put(path, options, headers);
     }
