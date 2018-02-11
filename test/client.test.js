@@ -307,16 +307,16 @@ describe('client test', function () {
     it('createFunction with invalid runtime should fail', async function() {
       try {
         await client.createFunction(serviceName, {
-              functionName: "test_invalid_runtime_function",
-              description: 'function desc',
-              memorySize: 128,
-              handler: 'main.handler',
-              runtime: 10,
-              timeout: 10,
-              code: {
-                zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
-              }
-          });
+          functionName: 'test_invalid_runtime_function',
+          description: 'function desc',
+          memorySize: 128,
+          handler: 'main.handler',
+          runtime: 10,
+          timeout: 10,
+          code: {
+            zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
+          }
+        });
       } catch (ex) {
         expect(ex.stack).to.contain('FCInvalidArgumentError');
         expect(ex.stack).to.contain('Runtime is set to an invalid value');
@@ -327,9 +327,9 @@ describe('client test', function () {
     it('updateFunction with invalid runtime should fail', async function() {
       try {
         await client.updateFunction(serviceName, functionName, {
-              description: 'updated function desc',
-              runtime: 10
-            });
+          description: 'updated function desc',
+          runtime: 10
+        });
       } catch (ex) {
         expect(ex.stack).to.contain('FCInvalidArgumentError');
         expect(ex.stack).to.contain('Runtime is set to an invalid value');
