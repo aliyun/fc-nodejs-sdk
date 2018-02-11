@@ -1,4 +1,10 @@
 
+2.0.1 / 2018-02-11
+==================
+
+  * Add create and update function runtime check
+  * change readme image and url to 2
+
 2.0.0 / 2017-12-19
 ==================
 
