@@ -19,39 +19,7 @@ var httpx = require('httpx');
 var kitx = require('kitx');
 var debug = require('debug')('lambda');
 var pkg = require('../package.json');
-
-function buildCanonicalHeaders(headers, prefix) {
-  var list = [];
-  var keys = Object.keys(headers);
-
-  var fcHeaders = {};
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-
-    var lowerKey = key.toLowerCase().trim();
-    if (lowerKey.startsWith(prefix)) {
-      list.push(lowerKey);
-      fcHeaders[lowerKey] = headers[key];
-    }
-  }
-  list.sort();
-
-  var canonical = '';
-  for (var _i = 0; _i < list.length; _i++) {
-    var _key = list[_i];
-    canonical += `${_key}:${fcHeaders[_key]}\n`;
-  }
-
-  return canonical;
-}
-
-function composeStringToSign(method, path, headers) {
-  var contentMD5 = headers['content-md5'] || '';
-  var contentType = headers['content-type'] || '';
-  var date = headers['date'];
-  var signHeaders = buildCanonicalHeaders(headers, 'x-fc');
-  return `${method}\n${contentMD5}\n${contentType}\n${date}\n${signHeaders}${path}`;
-}
+var helper = require('./helper');
 
 function signString(source, secret) {
   var buff = crypto.createHmac('sha256', secret).update(source, 'utf8').digest();
@@ -129,7 +97,7 @@ var Client = function () {
     value: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-        var url, postBody, buff, digest, md5, stringToSign, signature, response, responseBody, contentType, code, requestid, err;
+        var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -165,12 +133,14 @@ var Client = function () {
                   postBody = buff;
                 }
 
-                stringToSign = composeStringToSign(method, `/${this.version}${path}`, headers);
+                queriesToSign = null;
 
-                debug('stringToSign: %s', stringToSign);
-                signature = signString(stringToSign, this.accessKeySecret);
+                if (path.startsWith('/proxy/')) {
+                  queriesToSign = query;
+                }
+                signature = Client.getSignature(this.accessKeyID, this.accessKeySecret, method, `/${this.version}${path}`, headers, queriesToSign);
 
-                headers['authorization'] = `FC ${this.accessKeyID}:${signature}`;
+                headers['authorization'] = signature;
 
                 debug('request headers: %j', headers);
 
@@ -251,7 +221,7 @@ var Client = function () {
       return request;
     }()
 
-    /**
+    /*!
      * GET 请求
      *
      * @param {String} path 请求路径
@@ -266,22 +236,23 @@ var Client = function () {
       return this.request('GET', path, query, null, headers);
     }
 
-    /**
+    /*!
      * POST 请求
      *
      * @param {String} path 请求路径
      * @param {Buffer|String|Object} body 请求中的 body 部分
      * @param {Object} headers 请求中的自定义 headers 部分
+     * @param {Object} queries 请求中的自定义 queries 部分
      * @return {Promise} 返回 Response
      */
 
   }, {
     key: 'post',
-    value: function post(path, body, headers) {
-      return this.request('POST', path, null, body, headers);
+    value: function post(path, body, headers, queries) {
+      return this.request('POST', path, queries, body, headers);
     }
 
-    /**
+    /*!
      * PUT 请求
      *
      * @param {String} path 请求路径
@@ -296,7 +267,7 @@ var Client = function () {
       return this.request('PUT', path, null, body, headers);
     }
 
-    /**
+    /*!
      * DELETE 请求
      *
      * @param {String} path 请求路径
@@ -547,7 +518,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} event event信息
-     * @return {Promise} 返回 Object(包含headers和data属性[返回Function的执行结果]) 
+     * @return {Promise} 返回 Object(包含headers和data属性[返回Function的执行结果])
      */
 
   }, {
@@ -575,7 +546,7 @@ var Client = function () {
      * @param {String} serviceName 服务名
      * @param {String} functionName 服务名
      * @param {Object} options Trigger配置
-     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息]) 
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息])
      */
 
   }, {
@@ -597,7 +568,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} options 选项，optional
-     * @return {Promise} 返回 Object(包含headers和data属性[Trigger列表]) 
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger列表])
      */
 
   }, {
@@ -616,7 +587,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {String} triggerName
-     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息]) 
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息])
      */
 
   }, {
@@ -633,7 +604,7 @@ var Client = function () {
      * @param {String} functionName
      * @param {String} triggerName
      * @param {Object} options Trigger配置，见createTrigger
-     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息]) 
+     * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息])
      */
 
   }, {
@@ -649,7 +620,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {String} triggerName
-     * @return {Promise} 返回 Object(包含headers和data属性) 
+     * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
   }, {
@@ -657,6 +628,25 @@ var Client = function () {
     value: function deleteTrigger(serviceName, functionName, triggerName, options, headers) {
       var path = `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`;
       return this.delete(path, options, headers);
+    }
+
+    /**
+     * 获得Header 签名
+     *
+     * @param {String} accessKeyID
+     * @param {String} accessKeySecret
+     * @param {String} method : GET/POST/PUT/DELETE/HEAD
+     * @param {String} path
+     * @param {json} headers : {headerKey1 : 'headValue1'}
+     */
+
+  }], [{
+    key: 'getSignature',
+    value: function getSignature(accessKeyID, accessKeySecret, method, path, headers, queries) {
+      var stringToSign = helper.composeStringToSign(method, path, headers, queries);
+      debug('stringToSign: %s', stringToSign);
+      var sign = signString(stringToSign, accessKeySecret);
+      return `FC ${accessKeyID}:${sign}`;
     }
   }]);
 
