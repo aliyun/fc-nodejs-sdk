@@ -447,11 +447,11 @@ var Client = function () {
       }
 
       if (opts.memorySize) {
-        opts.memorySize = parseInt(opts.memorySize);
+        opts.memorySize = parseInt(opts.memorySize, 10);
       }
 
       if (opts.timeout) {
-        opts.timeout = parseInt(opts.timeout);
+        opts.timeout = parseInt(opts.timeout, 10);
       }
     }
 
