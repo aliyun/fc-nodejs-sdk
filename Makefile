@@ -26,6 +26,9 @@ test-coveralls: lint figures
 	@echo TRAVIS_JOB_ID $(TRAVIS_JOB_ID)
 	@nyc report --reporter=text-lcov | coveralls
 
+build-es5:
+	@npm run build-es5
+
 doc:
 	@doxmate build
 
