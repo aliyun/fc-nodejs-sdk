@@ -14,6 +14,16 @@ const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
 const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
 
 describe('client test', function () {
+  it('static function getSignature', function(){
+    var queries = {
+        a:'123',
+        b:'xyz',
+        'foo-bar': '123 ~ xyz-a'
+    }
+    var signature = FunctionComputeClient.getSignature(ACCOUNT_ID, ACCESS_KEY_SECRET, 'GET', '/hello/world', {date:'today'}, queries);
+    expect(signature).to.be.ok();
+    expect(signature).to.contain(`FC ${ACCOUNT_ID}:`);
+  });
 
   it('constructor', function () {
     expect(() => {
@@ -343,16 +353,7 @@ describe('client test', function () {
     });
   });
 
-  describe('trigger should ok', function () {
-    const functionName = 'hello-world';
-    const triggerName = 'image_resize';
-    const client = new FunctionComputeClient(ACCOUNT_ID, {
-      accessKeyID: ACCESS_KEY_ID,
-      accessKeySecret: ACCESS_KEY_SECRET,
-      region: 'cn-shanghai'
-    });
-
-    before(async function () {
+  async function createServiceAndFunction(client, serviceName, functionName, handlerName) {
       // clean up
       const service = await client.createService(serviceName);
       expect(service.data).to.be.ok();
@@ -361,7 +362,7 @@ describe('client test', function () {
         functionName: functionName,
         description: 'function desc',
         memorySize: 128,
-        handler: 'main.handler',
+        handler: handlerName,
         runtime: 'nodejs4.4',
         timeout: 10,
         code: {
@@ -370,9 +371,9 @@ describe('client test', function () {
       });
       expect(func.data).to.be.ok();
       expect(func.data).to.have.property('functionName', functionName);
-    });
+  };
 
-    after(async function () {
+  async function cleanupResources(client, serviceName, functionName, triggerName) {
       try {
         await client.deleteTrigger(serviceName, functionName, triggerName);
       } catch (ex) {
@@ -387,31 +388,104 @@ describe('client test', function () {
       }
       await client.deleteService(serviceName);
       // no exception = ok
-    });
+  };
 
-    it('createTrigger should ok', async function() {
+  async function createTrigger(client, serviceName, functionName, triggerName, triggerType, triggerConfig) {
       const trigger = await client.createTrigger(serviceName, functionName, {
         invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test`,
         sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:${triggerBucketName}`,
         triggerName: triggerName,
-        triggerType: 'oss',
-        triggerConfig: {
-          events: ['oss:ObjectCreated:*'],
-          filter: {
-            key: {
-              prefix: 'prefix',
-              suffix: 'suffix'
-            }
-          }
-        }
+        triggerType: triggerType,
+        triggerConfig: triggerConfig
       });
       expect(trigger.data).to.be.ok();
       expect(trigger.data).to.have.property('triggerName', triggerName);
       // sleep a while for trigger meta to sync
       await new Promise(res => setTimeout(res, 30 * 1000));
+  }
+
+  describe('http trigger should be ok', function () {
+    const functionName = 'http-echo';
+    const triggerName = 'http-trigger';
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
     });
 
-    it('listTriggers should ok', async function() {
+    before(async function () {
+      await createServiceAndFunction(client, serviceName, functionName, 'main.http_handler')
+    });
+
+    after(async function () {
+      await cleanupResources(client, serviceName, functionName, triggerName);
+    });
+
+    it('createTrigger should be ok', async function() {
+      const triggerConfig = {
+          "authType" : "function",		// `function` level here to make sure working well for signature.
+          "methods" : ["GET", "POST", "PUT"]
+      }
+      await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig)
+    });
+
+    it('getTrigger should be ok', async function() {
+      const trigger = await client.getTrigger(serviceName, functionName, triggerName);
+      expect(trigger.data).to.have.property('triggerName', triggerName);
+    });
+
+    it('send `GET` request to access http function should be ok', async function() {
+      const path = `/proxy/${serviceName}/${functionName}/action`;
+      const queries = {
+          x :'awsome',
+          y : 'serverless'
+      };
+      const headers = {
+          'custom-header': 'abc',
+      };
+
+      // var url: /2016-08-15/proxy/fc-nodejs-sdk-unit-test/http-echo/action?x=awsome&y=serverless
+      const resp = await client.get(path, queries, headers);
+      expect(resp.headers).to.have.property('x', 'awsome');
+      expect(resp.headers).to.have.property('y', 'serverless');
+      var body = JSON.parse(resp.data);
+      expect(body.queries).to.have.property('x', 'awsome');
+      expect(body.queries).to.have.property('y', 'serverless');
+      expect(body).to.have.property('method', 'GET');
+    });
+  });
+
+  describe('oss trigger should be ok', function () {
+    const functionName = 'hello-world';
+    const triggerName = 'image_resize';
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+
+    before(async function () {
+      await createServiceAndFunction(client, serviceName, functionName, 'main.handler')
+    });
+
+    after(async function () {
+      await cleanupResources(client, serviceName, functionName, triggerName);
+    });
+
+    it('createTrigger should be ok', async function() {
+      const triggerConfig = {
+        events: ['oss:ObjectCreated:*'],
+        filter: {
+          key: {
+            prefix: 'prefix',
+            suffix: 'suffix'
+          }
+        }
+      };
+      await createTrigger(client, serviceName, functionName, triggerName, 'oss', triggerConfig)
+    });
+
+    it('listTriggers should be ok', async function() {
       const response = await client.listTriggers(serviceName, functionName);
       expect(response.data).to.be.ok();
       expect(response.data.triggers).to.be.ok();
@@ -420,12 +494,12 @@ describe('client test', function () {
       expect(trigger).to.have.property('triggerName', triggerName);
     });
 
-    it('getTrigger should ok', async function() {
+    it('getTrigger should be ok', async function() {
       const trigger = await client.getTrigger(serviceName, functionName, triggerName);
       expect(trigger.data).to.have.property('triggerName', triggerName);
     });
 
-    it('updateTrigger should ok', async function() {
+    it('updateTrigger should be ok', async function() {
       const trigger = await client.updateTrigger(serviceName, functionName, triggerName, {
         invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`,
       });
@@ -433,10 +507,9 @@ describe('client test', function () {
       expect(trigger.data).to.have.property('invocationRole', `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`);
     });
 
-    it('deleteTrigger should ok', async function() {
+    it('deleteTrigger should be ok', async function() {
       await client.deleteTrigger(serviceName, functionName, triggerName);
       // No exception, no failed
     });
-
   });
 });
