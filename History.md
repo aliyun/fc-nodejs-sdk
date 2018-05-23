@@ -1,4 +1,11 @@
 
+2.0.2 / 2018-05-23
+==================
+
+  * add parameter `queries` for getSignature
+  * Delete unnecessary notes (#23)
+  * Eslint format js
+
 2.0.1 / 2018-02-11
 ==================
 
