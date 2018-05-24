@@ -136,7 +136,7 @@ var Client = function () {
                 queriesToSign = null;
 
                 if (path.startsWith('/proxy/')) {
-                  queriesToSign = query;
+                  queriesToSign = query || {};
                 }
                 signature = Client.getSignature(this.accessKeyID, this.accessKeySecret, method, `/${this.version}${path}`, headers, queriesToSign);
 
