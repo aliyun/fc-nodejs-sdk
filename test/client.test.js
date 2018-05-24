@@ -453,6 +453,14 @@ describe('client test', function () {
       expect(body.queries).to.have.property('y', 'serverless');
       expect(body).to.have.property('method', 'GET');
     });
+
+    it('send `GET` request with empty queries and headers to access http function should be ok', async function() {
+      const path = `/proxy/${serviceName}/${functionName}/`;
+      // var url: /2016-08-15/proxy/fc-nodejs-sdk-unit-test/http-echo/
+      const resp = await client.get(path);
+      var body = JSON.parse(resp.data);
+      expect(body).to.have.property('method', 'GET');
+    });
   });
 
   describe('oss trigger should be ok', function () {
