@@ -131,6 +131,22 @@ test().then();
 
 ### Custom headers
 
+
+```js
+var client = new FCClient('<account id>', {
+  accessKeyID: '<access key id>',
+  accessKeySecret: '<access key secret>',
+  region: 'cn-shanghai',
+  headers: {
+    'x-fc-invocation-type': 'Async'
+  }
+});
+
+await client.invokeFunction(serviceName, funcName, 'event'});
+```
+
+or
+
 ```js
 await client.invokeFunction(serviceName, funcName, 'event', {
   'x-fc-invocation-type': 'Async'
