@@ -410,7 +410,10 @@ describe('client test', function () {
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
       accessKeySecret: ACCESS_KEY_SECRET,
-      region: 'cn-shanghai'
+      region: 'cn-shanghai',
+      headers: {
+        'custom-header-in-constructor': 'abcd'
+      }
     });
 
     before(async function () {
@@ -448,6 +451,7 @@ describe('client test', function () {
       const resp = await client.get(path, queries, headers);
       expect(resp.headers).to.have.property('x', 'awsome');
       expect(resp.headers).to.have.property('y', 'serverless');
+      expect(resp.headers).to.have.property('custom-header-in-constructor', 'abcd');
       var body = JSON.parse(resp.data);
       expect(body.queries).to.have.property('x', 'awsome');
       expect(body.queries).to.have.property('y', 'serverless');
