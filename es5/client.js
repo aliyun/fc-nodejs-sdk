@@ -73,6 +73,8 @@ var Client = function () {
     this.host = `${accountid}.${region}${internal}.fc.aliyuncs.com`;
     this.version = '2016-08-15';
     this.timeout = Number.isFinite(config.timeout) ? config.timeout : 60000; // default is 60s
+
+    this.headers = config.headers || {};
   }
 
   _createClass(Client, [{
@@ -108,7 +110,7 @@ var Client = function () {
                   url = `${url}?${querystring.stringify(query)}`;
                 }
 
-                headers = Object.assign(this.buildHeaders(), headers);
+                headers = Object.assign(this.buildHeaders(), this.headers, headers);
 
 
                 if (body) {
