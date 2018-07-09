@@ -131,11 +131,32 @@ test().then();
 
 ### Custom headers
 
+We offer two ways to customize request headers. 
+
+One way is passing headers through the Client constructor. You should treat headers passed through the constructor as default custom headers, because all requests will use this headers.
+
+```js
+var client = new FCClient('<account id>', {
+  accessKeyID: '<access key id>',
+  accessKeySecret: '<access key secret>',
+  region: 'cn-shanghai',
+  headers: {
+    'x-fc-invocation-type': 'Async'
+  }
+});
+
+await client.invokeFunction(serviceName, funcName, 'event'});
+```
+
+Another way is passing headers through the function's parameter. You should use this way when you want to just pass headers in specific functions.
+
 ```js
 await client.invokeFunction(serviceName, funcName, 'event', {
   'x-fc-invocation-type': 'Async'
 });
 ```
+
+When both ways are used, headers will be merged. But for the headers with the same key, the headers provided by the function parameter overrides the headers provided by the constructor.
 
 ## API Spec
 
