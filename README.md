@@ -145,7 +145,7 @@ var client = new FCClient('<account id>', {
   }
 });
 
-await client.invokeFunction(serviceName, funcName, 'event'});
+await client.invokeFunction(serviceName, funcName, 'event');
 ```
 
 Another way is passing headers through the function's parameter. You should use this way when you want to just pass headers in specific functions.
