@@ -73,7 +73,6 @@ var Client = function () {
     this.host = `${accountid}.${region}${internal}.fc.aliyuncs.com`;
     this.version = '2016-08-15';
     this.timeout = Number.isFinite(config.timeout) ? config.timeout : 60000; // default is 60s
-
     this.headers = config.headers || {};
   }
 
@@ -388,9 +387,11 @@ var Client = function () {
      * - code function代码
      * - functionName
      * - handler
+     * - initializer
      * - memorySize
      * - runtime
      * - timeout
+     * - initializationTimeout
      *
      * @param {String} serviceName 服务名
      * @param {Object} options Function配置
@@ -418,12 +419,20 @@ var Client = function () {
         opts.handler = String(opts.handler);
       }
 
+      if (opts.initializer) {
+        opts.initializer = String(opts.initializer);
+      }
+
       if (opts.memorySize) {
         opts.memorySize = parseInt(opts.memorySize, 10);
       }
 
       if (opts.timeout) {
         opts.timeout = parseInt(opts.timeout, 10);
+      }
+
+      if (opts.initializationTimeout) {
+        opts.initializationTimeout = parseInt(opts.initializationTimeout, 10);
       }
     }
 

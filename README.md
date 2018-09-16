@@ -85,9 +85,12 @@ client.createService(serviceName).then(function(resp) {
 }).catch(function(err) {
   console.error(err);
 });
+
 ```
 
 ### async/await (node >= 7.6)
+
+#### create function without initializer
 
 ```js
 'use strict';
@@ -129,6 +132,53 @@ async function test () {
 test().then();
 ```
 
+#### create function with initializer
+```js
+'use strict';
+
+const FCClient = require('@alicloud/fc2');
+
+var client = new FCClient('<account id>', {
+  accessKeyID: '<access key id>',
+  accessKeySecret: '<access key secret>',
+  region: 'cn-shanghai',
+});
+
+var serviceName = '<service name>';
+var funcName = '<function name>';
+
+async function test () {
+  try {
+    var resp = await client.createService(serviceName);
+    console.log('create service: %j', resp);
+
+    resp = await client.createFunction(serviceName, {
+      functionName: funcName,
+      handler: 'counter.handler',
+      memorySize: 128,
+      runtime: 'nodejs4.4',
+      initializer: 'counter.initializer',
+      code: {
+        zipFile: fs.readFileSync('/tmp/counter.zip', 'base64'),
+      },
+    });
+    console.log('create function: %j', resp);
+
+    resp = await client.invokeFunction(serviceName, funcName, null);
+    console.log('invoke function: %j', resp);
+
+    uResp = await client.updateFunction(serviceName, funcName, {
+      description: 'updated function desc',
+      initializationTimeout: 60,
+    });
+    console.log('update function: %j', resp);
+  } catch (err) {
+    console.error(err);
+  }
+}
+test().then();
+```
+
 ### Custom headers
 
 We offer two ways to customize request headers. 
@@ -145,7 +195,7 @@ var client = new FCClient('<account id>', {
   }
 });
 
-await client.invokeFunction(serviceName, funcName, 'event'});
+await client.invokeFunction(serviceName, funcName, 'event');
 ```
 
 Another way is passing headers through the function's parameter. You should use this way when you want to just pass headers in specific functions.
