@@ -12,15 +12,17 @@ const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
 const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
 const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
+const domainName = process.env.DOMAIN_NAME || '123.cn-shanghai.' + ACCOUNT_ID + '.cname-test.fc.aliyun-inc.com';
+
 
 describe('client test', function () {
-  it('static function getSignature', function(){
+  it('static function getSignature', function () {
     var queries = {
-        a:'123',
-        b:'xyz',
-        'foo-bar': '123 ~ xyz-a'
+      a: '123',
+      b: 'xyz',
+      'foo-bar': '123 ~ xyz-a'
     }
-    var signature = FunctionComputeClient.getSignature(ACCOUNT_ID, ACCESS_KEY_SECRET, 'GET', '/hello/world', {date:'today'}, queries);
+    var signature = FunctionComputeClient.getSignature(ACCOUNT_ID, ACCESS_KEY_SECRET, 'GET', '/hello/world', { date: 'today' }, queries);
     expect(signature).to.be.ok();
     expect(signature).to.contain(`FC ${ACCOUNT_ID}:`);
   });
@@ -102,7 +104,7 @@ describe('client test', function () {
   });
 
   it('listServices with invalid accessKeyID', function () {
-    return (async function() {
+    return (async function () {
       var client = new FunctionComputeClient('accountid', {
         accessKeyID: 'invalidAccessKeyID',
         accessKeySecret: 'invalidAccessKeySecret',
@@ -118,7 +120,7 @@ describe('client test', function () {
   });
 
   it('listServices with invalid accessKeySecret', function () {
-    return (async function() {
+    return (async function () {
       var client = new FunctionComputeClient('accountid', {
         accessKeyID: ACCESS_KEY_ID,
         accessKeySecret: 'invalidAccessKeySecret',
@@ -128,7 +130,7 @@ describe('client test', function () {
         await client.listServices();
       } catch (ex) {
         expect(ex.name).to.be('FCSignatureNotMatchError');
-        expect(ex.message).to.match(/GET \/services failed with 403\. requestid: .{36}, message: signature does not match\./);
+        expect(ex.message).to.match(/GET \/services failed with 403\. requestid: .{36}, message: The request signature we calculated does not match the signature you provided\./);
       }
     })();
   });
@@ -176,13 +178,13 @@ describe('client test', function () {
       }
     });
 
-    it('createService should ok', async function() {
+    it('createService should ok', async function () {
       const service = await client.createService(serviceName);
       expect(service.data).to.be.ok();
       expect(service.data).to.have.property('serviceName', serviceName);
     });
 
-    it('listServices should ok', async function() {
+    it('listServices should ok', async function () {
       const response = await client.listServices();
       expect(response.data).to.be.ok();
       expect(response.data.services).to.be.ok();
@@ -191,14 +193,14 @@ describe('client test', function () {
       expect(service).to.have.property('serviceName');
     });
 
-    it('getService should ok', async function() {
+    it('getService should ok', async function () {
       const service = await client.getService(serviceName);
       expect(service.data).to.be.ok();
       expect(service.data).to.have.property('serviceName', serviceName);
       expect(service.data).to.have.property('description', '');
     });
 
-    it('updateService should ok', async function() {
+    it('updateService should ok', async function () {
       const service = await client.updateService(serviceName, {
         description: 'this is test update service'
       });
@@ -207,7 +209,7 @@ describe('client test', function () {
       expect(service.data).to.have.property('description', 'this is test update service');
     });
 
-    it('deleteService should ok', async function() {
+    it('deleteService should ok', async function () {
       await client.deleteService(serviceName);
       // no exception = ok
     });
@@ -238,7 +240,7 @@ describe('client test', function () {
       // no exception = ok
     });
 
-    it('createFunction should ok', async function() {
+    it('createFunction should ok', async function () {
       const func = await client.createFunction(serviceName, {
         functionName: functionName,
         description: 'function desc',
@@ -254,7 +256,7 @@ describe('client test', function () {
       expect(func.data).to.have.property('functionName', functionName);
     });
 
-    it('listFunctions should ok', async function() {
+    it('listFunctions should ok', async function () {
       const response = await client.listFunctions(serviceName);
       expect(response.data).to.be.ok();
       expect(response.data.functions).to.be.ok();
@@ -263,18 +265,18 @@ describe('client test', function () {
       expect(func).to.have.property('functionName', functionName);
     });
 
-    it('getFunction should ok', async function() {
+    it('getFunction should ok', async function () {
       const func = await client.getFunction(serviceName, functionName);
       expect(func.data).to.have.property('functionName', functionName);
     });
 
-    it('getFunctionCode should ok', async function() {
+    it('getFunctionCode should ok', async function () {
       const code = await client.getFunctionCode(serviceName, functionName);
       expect(code.data).to.have.property('url');
       expect(code.data).to.have.property('checksum');
     });
 
-    it('updateFunction should ok', async function() {
+    it('updateFunction should ok', async function () {
       const func = await client.updateFunction(serviceName, functionName, {
         description: 'updated function desc'
       });
@@ -282,31 +284,31 @@ describe('client test', function () {
       expect(func.data).to.have.property('description', 'updated function desc');
     });
 
-    it('invokeFunction should ok', async function() {
+    it('invokeFunction should ok', async function () {
       const response = await client.invokeFunction(serviceName, functionName, 'world');
       expect(response.data).to.be('hello world');
     });
 
-    it('invokeFunction should faster', async function() {
+    it('invokeFunction should faster', async function () {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'));
       expect(response.data).to.be('hello world');
     });
 
-    it('invokeFunction async should ok', async function() {
+    it('invokeFunction async should ok', async function () {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {
         'x-fc-invocation-type': 'Async'
       });
       expect(response.data).to.be('');
     });
 
-    it('invokeFunction async with upper case header should ok', async function() {
+    it('invokeFunction async with upper case header should ok', async function () {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {
         'X-Fc-Invocation-Type': 'Async'
       });
       expect(response.data).to.be('');
     });
 
-    it('invokeFunction with invalid event should fail', async function() {
+    it('invokeFunction with invalid event should fail', async function () {
       expect(() => {
         client.invokeFunction(serviceName, functionName, {
           event: 'hello world',
@@ -314,7 +316,7 @@ describe('client test', function () {
       }).to.throwException(/"event" must be String or Buffer/);
     });
 
-    it('createFunction with invalid runtime should fail', async function() {
+    it('createFunction with invalid runtime should fail', async function () {
       try {
         await client.createFunction(serviceName, {
           functionName: 'test_invalid_runtime_function',
@@ -334,7 +336,7 @@ describe('client test', function () {
 
     });
 
-    it('updateFunction with invalid runtime should fail', async function() {
+    it('updateFunction with invalid runtime should fail', async function () {
       try {
         await client.updateFunction(serviceName, functionName, {
           description: 'updated function desc',
@@ -347,61 +349,61 @@ describe('client test', function () {
 
     });
 
-    it('deleteFunction should ok', async function() {
+    it('deleteFunction should ok', async function () {
       await client.deleteFunction(serviceName, functionName);
       // No exception, no failed
     });
   });
 
   async function createServiceAndFunction(client, serviceName, functionName, handlerName) {
-      // clean up
-      const service = await client.createService(serviceName);
-      expect(service.data).to.be.ok();
-      expect(service.data).to.have.property('serviceName', serviceName);
-      const func = await client.createFunction(serviceName, {
-        functionName: functionName,
-        description: 'function desc',
-        memorySize: 128,
-        handler: handlerName,
-        runtime: 'nodejs4.4',
-        timeout: 10,
-        code: {
-          zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
-        }
-      });
-      expect(func.data).to.be.ok();
-      expect(func.data).to.have.property('functionName', functionName);
+    // clean up
+    const service = await client.createService(serviceName);
+    expect(service.data).to.be.ok();
+    expect(service.data).to.have.property('serviceName', serviceName);
+    const func = await client.createFunction(serviceName, {
+      functionName: functionName,
+      description: 'function desc',
+      memorySize: 128,
+      handler: handlerName,
+      runtime: 'nodejs4.4',
+      timeout: 10,
+      code: {
+        zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
+      }
+    });
+    expect(func.data).to.be.ok();
+    expect(func.data).to.have.property('functionName', functionName);
   };
 
   async function cleanupResources(client, serviceName, functionName, triggerName) {
-      try {
-        await client.deleteTrigger(serviceName, functionName, triggerName);
-      } catch (ex) {
-        // Ignore
-        console.log(ex.stack);
-      }
-      try {
-        await client.deleteFunction(serviceName, functionName);
-      } catch (ex) {
-        // Ignore
-        console.log(ex.stack);
-      }
-      await client.deleteService(serviceName);
-      // no exception = ok
+    try {
+      await client.deleteTrigger(serviceName, functionName, triggerName);
+    } catch (ex) {
+      // Ignore
+      console.log(ex.stack);
+    }
+    try {
+      await client.deleteFunction(serviceName, functionName);
+    } catch (ex) {
+      // Ignore
+      console.log(ex.stack);
+    }
+    await client.deleteService(serviceName);
+    // no exception = ok
   };
 
   async function createTrigger(client, serviceName, functionName, triggerName, triggerType, triggerConfig) {
-      const trigger = await client.createTrigger(serviceName, functionName, {
-        invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test`,
-        sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:${triggerBucketName}`,
-        triggerName: triggerName,
-        triggerType: triggerType,
-        triggerConfig: triggerConfig
-      });
-      expect(trigger.data).to.be.ok();
-      expect(trigger.data).to.have.property('triggerName', triggerName);
-      // sleep a while for trigger meta to sync
-      await new Promise(res => setTimeout(res, 30 * 1000));
+    const trigger = await client.createTrigger(serviceName, functionName, {
+      invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test`,
+      sourceArn: `acs:oss:cn-shanghai:${ACCOUNT_ID}:${triggerBucketName}`,
+      triggerName: triggerName,
+      triggerType: triggerType,
+      triggerConfig: triggerConfig
+    });
+    expect(trigger.data).to.be.ok();
+    expect(trigger.data).to.have.property('triggerName', triggerName);
+    // sleep a while for trigger meta to sync
+    await new Promise(res => setTimeout(res, 30 * 1000));
   }
 
   describe('http trigger should be ok', function () {
@@ -424,41 +426,42 @@ describe('client test', function () {
       await cleanupResources(client, serviceName, functionName, triggerName);
     });
 
-    it('createTrigger should be ok', async function() {
+    it('createTrigger should be ok', async function () {
       const triggerConfig = {
-          "authType" : "function",		// `function` level here to make sure working well for signature.
-          "methods" : ["GET", "POST", "PUT"]
+        "authType": "function",		// `function` level here to make sure working well for signature.
+        "methods": ["GET", "POST", "PUT"]
       }
       await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig)
     });
 
-    it('getTrigger should be ok', async function() {
+    it('getTrigger should be ok', async function () {
       const trigger = await client.getTrigger(serviceName, functionName, triggerName);
       expect(trigger.data).to.have.property('triggerName', triggerName);
     });
 
-    it('send `GET` request to access http function should be ok', async function() {
+    it('send `GET` request to access http function should be ok', async function () {
       const path = `/proxy/${serviceName}/${functionName}/action`;
       const queries = {
-          x :'awsome',
-          y : 'serverless'
+        x: 'awsome',
+        y: 'serverless'
       };
       const headers = {
-          'custom-header': 'abc',
+        'custom-header': 'abc',
       };
 
       // var url: /2016-08-15/proxy/fc-nodejs-sdk-unit-test/http-echo/action?x=awsome&y=serverless
       const resp = await client.get(path, queries, headers);
       expect(resp.headers).to.have.property('x', 'awsome');
       expect(resp.headers).to.have.property('y', 'serverless');
-      expect(resp.headers).to.have.property('custom-header-in-constructor', 'abcd');
       var body = JSON.parse(resp.data);
+      expect(body).to.have.property('headers')
+      expect(body.headers).to.have.property('custom-header-in-constructor', 'abcd')
       expect(body.queries).to.have.property('x', 'awsome');
       expect(body.queries).to.have.property('y', 'serverless');
       expect(body).to.have.property('method', 'GET');
     });
 
-    it('send `GET` request with empty queries and headers to access http function should be ok', async function() {
+    it('send `GET` request with empty queries and headers to access http function should be ok', async function () {
       const path = `/proxy/${serviceName}/${functionName}/`;
       // var url: /2016-08-15/proxy/fc-nodejs-sdk-unit-test/http-echo/
       const resp = await client.get(path);
@@ -484,7 +487,7 @@ describe('client test', function () {
       await cleanupResources(client, serviceName, functionName, triggerName);
     });
 
-    it('createTrigger should be ok', async function() {
+    it('createTrigger should be ok', async function () {
       const triggerConfig = {
         events: ['oss:ObjectCreated:*'],
         filter: {
@@ -497,7 +500,7 @@ describe('client test', function () {
       await createTrigger(client, serviceName, functionName, triggerName, 'oss', triggerConfig)
     });
 
-    it('listTriggers should be ok', async function() {
+    it('listTriggers should be ok', async function () {
       const response = await client.listTriggers(serviceName, functionName);
       expect(response.data).to.be.ok();
       expect(response.data.triggers).to.be.ok();
@@ -506,12 +509,12 @@ describe('client test', function () {
       expect(trigger).to.have.property('triggerName', triggerName);
     });
 
-    it('getTrigger should be ok', async function() {
+    it('getTrigger should be ok', async function () {
       const trigger = await client.getTrigger(serviceName, functionName, triggerName);
       expect(trigger.data).to.have.property('triggerName', triggerName);
     });
 
-    it('updateTrigger should be ok', async function() {
+    it('updateTrigger should be ok', async function () {
       const trigger = await client.updateTrigger(serviceName, functionName, triggerName, {
         invocationRole: `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`,
       });
@@ -519,9 +522,76 @@ describe('client test', function () {
       expect(trigger.data).to.have.property('invocationRole', `acs:ram::${ACCOUNT_ID}:role/fc-test-updated`);
     });
 
-    it('deleteTrigger should be ok', async function() {
+    it('deleteTrigger should be ok', async function () {
       await client.deleteTrigger(serviceName, functionName, triggerName);
       // No exception, no failed
+    });
+  });
+
+  describe('customDomain should be ok', function () {
+
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+
+    before(async function () {
+      // clean up
+      const response = await client.listCustomDomains();
+      for (var i = 0; i < response.data.customDomains.length; i++) {
+        const customDomain = response.data.customDomains[i];
+        if (customDomain.domainName === domainName) {
+          await client.deleteCustomDomain(customDomain.domainName);
+        }
+      }
+    });
+
+    it('createCustomDomain should be ok', async function () {
+      const customDomain = await client.createCustomDomain(domainName);
+      expect(customDomain.data).to.be.ok();
+      expect(customDomain.data).to.have.property('domainName', domainName);
+    });
+
+    it('listCustomDomains should be ok', async function () {
+      const response = await client.listCustomDomains();
+      expect(response.data).to.be.ok();
+      expect(response.data.customDomains).to.be.ok();
+      expect(response.data.customDomains.length).to.above(0);
+      const [customDomain] = response.data.customDomains;
+      expect(customDomain).to.have.property('domainName');
+    });
+
+    it('getCustomDomain should be ok', async function () {
+      const customDomain = await client.getCustomDomain(domainName);
+      expect(customDomain.data).to.be.ok();
+      expect(customDomain.data).to.have.property('domainName', domainName);
+      expect(customDomain.data).to.have.property('protocol', 'HTTP');
+    });
+
+    it('updateCustomDomain should be ok', async function () {
+      const customDomain = await client.updateCustomDomain(domainName, {
+        routeConfig: {
+          routes: [
+            {
+              path: '/',
+              serviceName: 's1',
+              functionName: 'f1',
+            }
+          ]
+        },
+      });
+      expect(customDomain.data).to.be.ok();
+      expect(customDomain.data).to.have.property('domainName', domainName);
+      expect(customDomain.data.routeConfig).to.have.property('routes');
+      expect(customDomain.data.routeConfig.routes[0]).to.have.property('path','/');
+      expect(customDomain.data.routeConfig.routes[0]).to.have.property('serviceName','s1');
+      expect(customDomain.data.routeConfig.routes[0]).to.have.property('functionName','f1');
+    });
+
+
+    it('deleteCustomDomain should be ok', async function () {
+      await client.deleteCustomDomain(domainName);
     });
   });
 });
