@@ -642,7 +642,88 @@ var Client = function () {
      * @param {json} headers : {headerKey1 : 'headValue1'}
      */
 
-  }], [{
+  }, {
+    key: 'createCustomDomain',
+    value: function createCustomDomain(domainName, options = {}, headers) {
+      return this.post('/custom-domains', Object.assign({
+        domainName,
+      }, options), headers);
+    }
+
+    /** 
+    * 创建CustomDomain
+    *
+    * Options:
+    * - protocol 
+    * - routeConfig
+    *
+    * @param {String} domainName 域名
+    * @param {Object} options 选项，optional
+    * @return {Promise} 返回 Object(包含headers和data属性[CustomDomainResponse])
+    */
+
+  }, {
+    key: 'updateCustomDomain',
+    value: function updateCustomDomain(domainName, options = {}, headers) {
+      return this.put(`/custom-domains/${domainName}`, options, headers);
+    }
+
+    /**
+    * 更新CustomDomain信息
+    *
+    * Options:
+    * - protocol 
+    * - routeConfig
+    *
+    * @param {String} domainName 
+    * @param {Object} options 选项，optional
+    * @return {Promise} 返回 Object(包含headers和data属性[CustomDomainResponse])
+    */
+  }, {
+    key: 'getCustomDomain',
+    value: function getCustomDomain(domainName, headers) {
+      return this.get(`/custom-domains/${domainName}`, null, headers);
+    }
+
+    /**
+    * 获取CustomDomain信息
+    *
+    * @param {String} domainName
+    * @return {Promise} 返回 Object(包含headers和data属性[CustomDomain 信息])
+    */
+  }, {
+    key: 'deleteCustomDomain',
+    value: function deleteCustomDomain(domainName, options = {}, headers) {
+      return this.delete(`/custom-domains/${domainName}`, null, options, headers);
+    }
+
+    /**
+    * 删除CustomDomain
+    *
+    * @param {String} domainName
+    * @return {Promise} 返回 Object(包含headers和data属性)
+    */
+
+  }, {
+    key: 'listCustomDomains',
+    value: function listCustomDomain(options = {}, headers) {
+      return this.get('/custom-domains', options, headers);
+    }
+
+    /**
+    * 获取CustomDomain列表
+    *
+    * Options:
+    * - limit
+    * - prefix
+    * - startKey
+    * - nextToken
+    *
+    * @param {Object} options 选项，optional
+    * @return {Promise} 返回 Object(包含headers和data属性[CustomDomain 列表])
+    */
+
+  },], [{
     key: 'getSignature',
     value: function getSignature(accessKeyID, accessKeySecret, method, path, headers, queries) {
       var stringToSign = helper.composeStringToSign(method, path, headers, queries);
