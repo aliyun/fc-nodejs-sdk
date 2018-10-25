@@ -9,8 +9,12 @@ lint:
 test/figures/test.zip: test/figures/main.js
 	@zip -r $@ -j test/figures/main.js
 
-figures: test/figures/test.zip
-	@unzip -v $^
+test/figures/counter.zip: test/figures/counter.js
+	@zip -r $@ -j test/figures/counter.js
+
+figures: test/figures/test.zip test/figures/counter.zip
+	@unzip -v test/figures/test.zip
+	@unzip -v test/figures/counter.zip
 
 test: figures
 	@mocha -t $(TIMEOUT) -R spec $(TESTS)
