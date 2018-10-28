@@ -21,7 +21,7 @@ describe('client test', function () {
       a: '123',
       b: 'xyz',
       'foo-bar': '123 ~ xyz-a'
-    }
+    };
     var signature = FunctionComputeClient.getSignature(ACCOUNT_ID, ACCESS_KEY_SECRET, 'GET', '/hello/world', { date: 'today' }, queries);
     expect(signature).to.be.ok();
     expect(signature).to.contain(`FC ${ACCOUNT_ID}:`);
@@ -194,7 +194,12 @@ describe('client test', function () {
     });
 
     it('getService should ok', async function () {
-      const service = await client.getService(serviceName);
+      var service = await client.getService(serviceName, {}, 'LATEST');
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
+      expect(service.data).to.have.property('description', '');
+
+      service = await client.getService(serviceName);
       expect(service.data).to.be.ok();
       expect(service.data).to.have.property('serviceName', serviceName);
       expect(service.data).to.have.property('description', '');
@@ -257,43 +262,55 @@ describe('client test', function () {
       expect(func.data).to.have.property('functionName', functionName);
     });
 
-    it('createFunction with initializer should ok', async function() {
-        const func = await client.createFunction(serviceName, {
-            functionName: initFunctionName,
-            description: 'function desc',
-            memorySize: 128,
-            handler: 'counter.handler',
-            runtime: 'nodejs4.4',
-            initializer: 'counter.initializer',
-            initializationTimeout: 10,
-            timeout: 10,
-            code: {
-                zipFile: fs.readFileSync(path.join(__dirname, 'figures/counter.zip'), 'base64')
-            }
-        });
-        expect(func.data).to.be.ok();
-        expect(func.data).to.have.property('functionName', initFunctionName);
+    it('createFunction with initializer should ok', async function () {
+      const func = await client.createFunction(serviceName, {
+        functionName: initFunctionName,
+        description: 'function desc',
+        memorySize: 128,
+        handler: 'counter.handler',
+        runtime: 'nodejs4.4',
+        initializer: 'counter.initializer',
+        initializationTimeout: 10,
+        timeout: 10,
+        code: {
+          zipFile: fs.readFileSync(path.join(__dirname, 'figures/counter.zip'), 'base64')
+        }
+      });
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', initFunctionName);
     });
 
-    it('listFunctions should ok', async function() {
-      const response = await client.listFunctions(serviceName);
+    it('listFunctions should ok', async function () {
+      var response = await client.listFunctions(serviceName);
       expect(response.data).to.be.ok();
       expect(response.data.functions).to.be.ok();
       expect(response.data.functions).to.have.length(2);
-      const func = response.data.functions;
+      var func = response.data.functions;
+      expect(func[0]).to.have.property('functionName', initFunctionName);
+      expect(func[1]).to.have.property('functionName', functionName);
+
+      response = await client.listFunctions(serviceName, {}, {}, 'LATEST');
+      expect(response.data).to.be.ok();
+      expect(response.data.functions).to.be.ok();
+      expect(response.data.functions).to.have.length(2);
+      func = response.data.functions;
       expect(func[0]).to.have.property('functionName', initFunctionName);
       expect(func[1]).to.have.property('functionName', functionName);
     });
 
     it('getFunction should ok', async function () {
-      const func = await client.getFunction(serviceName, functionName);
+      const func = await client.getFunction(serviceName, functionName, {}, 'LATEST');
       expect(func.data).to.have.property('functionName', functionName);
       const initFunc = await client.getFunction(serviceName, initFunctionName);
       expect(initFunc.data).to.have.property('functionName', initFunctionName);
     });
 
     it('getFunctionCode should ok', async function () {
-      const code = await client.getFunctionCode(serviceName, functionName);
+      var code = await client.getFunctionCode(serviceName, functionName);
+      expect(code.data).to.have.property('url');
+      expect(code.data).to.have.property('checksum');
+
+      code = await client.getFunctionCode(serviceName, functionName, {}, 'LATEST');
       expect(code.data).to.have.property('url');
       expect(code.data).to.have.property('checksum');
     });
@@ -307,7 +324,7 @@ describe('client test', function () {
 
       const initFunc = await client.updateFunction(serviceName, initFunctionName, {
         description: 'updated function desc',
-          initializationTimeout: '20'
+        initializationTimeout: '20'
       });
       expect(initFunc.data).to.have.property('functionName', initFunctionName);
       expect(initFunc.data).to.have.property('description', 'updated function desc');
@@ -316,7 +333,7 @@ describe('client test', function () {
     });
 
     it('invokeFunction should ok', async function () {
-      const response = await client.invokeFunction(serviceName, functionName, 'world');
+      const response = await client.invokeFunction(serviceName, functionName, 'world', {}, 'LATEST');
       expect(response.data).to.be('hello world');
 
       const initResponse_1 = await client.invokeFunction(serviceName, initFunctionName, null);
@@ -442,7 +459,7 @@ describe('client test', function () {
     });
     expect(func.data).to.be.ok();
     expect(func.data).to.have.property('functionName', functionName);
-  };
+  }
 
   async function cleanupResources(client, serviceName, functionName, triggerName) {
     try {
@@ -459,7 +476,7 @@ describe('client test', function () {
     }
     await client.deleteService(serviceName);
     // no exception = ok
-  };
+  }
 
   async function createTrigger(client, serviceName, functionName, triggerName, triggerType, triggerConfig) {
     const trigger = await client.createTrigger(serviceName, functionName, {
@@ -488,7 +505,7 @@ describe('client test', function () {
     });
 
     before(async function () {
-      await createServiceAndFunction(client, serviceName, functionName, 'main.http_handler')
+      await createServiceAndFunction(client, serviceName, functionName, 'main.http_handler');
     });
 
     after(async function () {
@@ -497,10 +514,10 @@ describe('client test', function () {
 
     it('createTrigger should be ok', async function () {
       const triggerConfig = {
-        "authType": "function",		// `function` level here to make sure working well for signature.
-        "methods": ["GET", "POST", "PUT"]
-      }
-      await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig)
+        'authType': 'function',		// `function` level here to make sure working well for signature.
+        'methods': ['GET', 'POST', 'PUT']
+      };
+      await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig);
     });
 
     it('getTrigger should be ok', async function () {
@@ -523,8 +540,8 @@ describe('client test', function () {
       expect(resp.headers).to.have.property('x', 'awsome');
       expect(resp.headers).to.have.property('y', 'serverless');
       var body = JSON.parse(resp.data);
-      expect(body).to.have.property('headers')
-      expect(body.headers).to.have.property('custom-header-in-constructor', 'abcd')
+      expect(body).to.have.property('headers');
+      expect(body.headers).to.have.property('custom-header-in-constructor', 'abcd');
       expect(body.queries).to.have.property('x', 'awsome');
       expect(body.queries).to.have.property('y', 'serverless');
       expect(body).to.have.property('method', 'GET');
@@ -549,7 +566,7 @@ describe('client test', function () {
     });
 
     before(async function () {
-      await createServiceAndFunction(client, serviceName, functionName, 'main.handler')
+      await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
     });
 
     after(async function () {
@@ -566,7 +583,7 @@ describe('client test', function () {
           }
         }
       };
-      await createTrigger(client, serviceName, functionName, triggerName, 'oss', triggerConfig)
+      await createTrigger(client, serviceName, functionName, triggerName, 'oss', triggerConfig);
     });
 
     it('listTriggers should be ok', async function () {
@@ -653,14 +670,160 @@ describe('client test', function () {
       expect(customDomain.data).to.be.ok();
       expect(customDomain.data).to.have.property('domainName', domainName);
       expect(customDomain.data.routeConfig).to.have.property('routes');
-      expect(customDomain.data.routeConfig.routes[0]).to.have.property('path','/');
-      expect(customDomain.data.routeConfig.routes[0]).to.have.property('serviceName','s1');
-      expect(customDomain.data.routeConfig.routes[0]).to.have.property('functionName','f1');
+      expect(customDomain.data.routeConfig.routes[0]).to.have.property('path', '/');
+      expect(customDomain.data.routeConfig.routes[0]).to.have.property('serviceName', 's1');
+      expect(customDomain.data.routeConfig.routes[0]).to.have.property('functionName', 'f1');
     });
 
 
     it('deleteCustomDomain should be ok', async function () {
       await client.deleteCustomDomain(domainName);
+    });
+  });
+
+  describe('alias test', async function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+    const functionName = 'hello-world';
+    const aliasName = 'new-version';
+
+
+    before(async function () {
+      await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
+      await client.publishVersion(serviceName, 'test version 1');
+      await client.updateFunction(serviceName, functionName, {
+        description: 'updated function desc'
+      });
+      await client.publishVersion(serviceName, 'test version 2');
+    });
+
+    after(async function () {
+      const aliasRes = await client.listAliases(serviceName);
+      aliasRes.data.aliases.forEach(async function (alias) {
+        await client.deleteAlias(serviceName, alias.aliasName);
+      });
+
+      const versionsRes = await client.listVersions(serviceName);
+      versionsRes.data.versions.forEach(async function (version) {
+        await client.deleteVersion(serviceName, version.versionId);
+      });
+
+      await cleanupResources(client, serviceName, functionName);
+    });
+
+    it('create alias', async function () {
+      const res = await client.createAlias(serviceName, aliasName, '1',
+        {
+          'description': 'test alias',
+          'additionalVersionWeight': {
+            '1': 1
+          }
+        });
+
+      expect(res.data.aliasName).to.be(aliasName);
+      expect(res.data.versionId).to.be('1');
+      expect(res.data.description).to.be('test alias');
+      expect(res.data.additionalVersionWeight).to.eql({ '1': 1 });
+    });
+
+    it('update alias', async function () {
+      var res = await client.updateAlias(serviceName, aliasName, null,
+        {
+          'additionalVersionWeight': {
+            '2': 0.3
+          }
+        }
+      );
+      expect(res.data.aliasName).to.be(aliasName);
+      expect(res.data.versionId).to.be('1');
+      expect(res.data.description).to.be('');
+      expect(res.data.additionalVersionWeight).to.eql({ '2': 0.3 });
+
+      res = await client.updateAlias(serviceName, aliasName, '2',
+        {
+          'additionalVersionWeight': {
+            '2': 0.5
+          }
+        }
+      );
+
+      expect(res.data.aliasName).to.be(aliasName);
+      expect(res.data.versionId).to.be('2');
+      expect(res.data.description).to.be('');
+      expect(res.data.additionalVersionWeight).to.eql({ '2': 0.5 });
+    });
+
+    it('get alias', async function () {
+      const res = await client.getAlias(serviceName, aliasName);
+
+      expect(res.data.aliasName).to.be(aliasName);
+      expect(res.data.versionId).to.be('2');
+      expect(res.data.description).to.be('');
+      expect(res.data.additionalVersionWeight).to.eql({ '2': 0.5 });
+    });
+
+    it('list aliases', async function () {
+      const res = await client.listAliases(serviceName);
+
+      expect(res.data.aliases).to.length(1);
+      expect(res.data.aliases[0].versionId).to.be('2');
+      expect(res.data.aliases[0].description).to.be('');
+      expect(res.data.aliases[0].additionalVersionWeight).to.eql({ '2': 0.5 });
+    });
+
+    it('delete alias', async function () {
+      const res = await client.deleteAlias(serviceName, aliasName);
+
+      expect(res.data).to.be('');
+    });
+
+  });
+
+  describe('versions test', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+    const functionName = 'hello-world';
+
+    before(async function () {
+      await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
+    });
+
+    after(async function () {
+      const res = await client.listVersions(serviceName);
+
+      res.data.versions.forEach(async function (version) {
+        await client.deleteVersion(serviceName, version.versionId);
+      });
+      await cleanupResources(client, serviceName, functionName);
+    });
+
+    it('publish version', async function () {
+      await client.publishVersion(serviceName);
+      await client.deleteVersion(serviceName, '1');
+
+      const description = 'test version';
+      const version = await client.publishVersion(serviceName, description);
+      expect(version.data).to.be.ok();
+      expect(version.data).to.have.property('versionId', '2');
+      expect(version.data).to.have.property('description', description);
+    });
+
+    it('list versions', async function () {
+      const res = await client.listVersions(serviceName);
+
+      expect(res.data.versions).to.have.length(1);
+      expect(res.data.versions[0].versionId).to.be('2');
+    });
+
+    it('delete version', async function () {
+      const res = await client.deleteVersion(serviceName, '2');
+      expect(res.data).to.be('');
     });
   });
 });
