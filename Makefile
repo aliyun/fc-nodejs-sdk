@@ -2,6 +2,7 @@ TESTS = test/*.test.js
 REPORTER = spec
 TIMEOUT = 60000
 PATH := ./node_modules/.bin:$(PATH)
+SHELL := /bin/bash
 
 lint:
 	@eslint --fix lib index.js test
