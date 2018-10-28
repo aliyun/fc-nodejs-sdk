@@ -26,6 +26,13 @@ function signString(source, secret) {
   return new Buffer(buff, 'binary').toString('base64');
 }
 
+function getServiceName(serviceName, qualifier) {
+  if (qualifier) {
+    return `${serviceName}$${qualifier}`;
+  }
+  return serviceName;
+}
+
 var Client = function () {
   function Client(accountid, config) {
     _classCallCheck(this, Client);
@@ -332,13 +339,18 @@ var Client = function () {
      * 获取service信息
      *
      * @param {String} serviceName
+     * @param {Object} headers
+     * @param {String} qualifier
      * @return {Promise} 返回 Object(包含headers和data属性[Service 信息])
      */
 
   }, {
     key: 'getService',
-    value: function getService(serviceName, headers) {
-      return this.get(`/services/${serviceName}`, null, headers);
+    value: function getService(serviceName) {
+      var headers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var qualifier = arguments[2];
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}`, null, headers);
     }
 
     /**
@@ -447,6 +459,8 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {Object} options 选项，optional
+     * @param {Object} headers
+     * @param {String} qualifier 可选
      * @return {Promise} 返回 Object(包含headers和data属性[Function列表])
      */
 
@@ -454,9 +468,10 @@ var Client = function () {
     key: 'listFunctions',
     value: function listFunctions(serviceName) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var headers = arguments[2];
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var qualifier = arguments[3];
 
-      return this.get(`/services/${serviceName}/functions`, options, headers);
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions`, options, headers);
     }
 
     /**
@@ -464,13 +479,18 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
      * @return {Promise} 返回 Object(包含headers和data属性[Function信息])
      */
 
   }, {
     key: 'getFunction',
-    value: function getFunction(serviceName, functionName, headers) {
-      return this.get(`/services/${serviceName}/functions/${functionName}`, null, headers);
+    value: function getFunction(serviceName, functionName) {
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var qualifier = arguments[3];
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}`, null, headers);
     }
 
     /**
@@ -478,13 +498,18 @@ var Client = function () {
      *
      * @param {String} serviceName
      * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
      * @return {Promise} 返回 Object(包含headers和data属性[Function信息])
      */
 
   }, {
     key: 'getFunctionCode',
-    value: function getFunctionCode(serviceName, functionName, headers) {
-      return this.get(`/services/${serviceName}/functions/${functionName}/code`, headers);
+    value: function getFunctionCode(serviceName, functionName) {
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var qualifier = arguments[3];
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/code`, headers);
     }
 
     /**
@@ -528,6 +553,8 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} event event信息
+     * @param {Object} headers 
+     * @param {String} qualifier
      * @return {Promise} 返回 Object(包含headers和data属性[返回Function的执行结果])
      */
 
@@ -535,11 +562,13 @@ var Client = function () {
     key: 'invokeFunction',
     value: function invokeFunction(serviceName, functionName, event) {
       var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var qualifier = arguments[4];
 
       if (event && typeof event !== 'string' && !Buffer.isBuffer(event)) {
         throw new TypeError('"event" must be String or Buffer');
       }
-      var path = `/services/${serviceName}/functions/${functionName}/invocations`;
+
+      var path = `/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/invocations`;
       return this.post(path, event, headers);
     }
 
@@ -552,16 +581,20 @@ var Client = function () {
      * - triggerType
      * - triggerName
      * - triggerConfig
+     * - qualifier
      *
      * @param {String} serviceName 服务名
      * @param {String} functionName 服务名
      * @param {Object} options Trigger配置
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息])
      */
 
   }, {
     key: 'createTrigger',
-    value: function createTrigger(serviceName, functionName, options, headers) {
+    value: function createTrigger(serviceName, functionName, options) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
       var path = `/services/${serviceName}/functions/${functionName}/triggers`;
       return this.post(path, options, headers);
     }
@@ -614,12 +647,16 @@ var Client = function () {
      * @param {String} functionName
      * @param {String} triggerName
      * @param {Object} options Trigger配置，见createTrigger
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性[Trigger信息])
      */
 
   }, {
     key: 'updateTrigger',
-    value: function updateTrigger(serviceName, functionName, triggerName, options, headers) {
+    value: function updateTrigger(serviceName, functionName, triggerName) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
       var path = `/services/${serviceName}/functions/${functionName}/triggers/${triggerName}`;
       return this.put(path, options, headers);
     }
@@ -733,6 +770,178 @@ var Client = function () {
       var headers = arguments[2];
 
       return this.delete(`/custom-domains/${domainName}`, null, options, headers);
+    }
+
+    /**
+     * 创建 version
+     * 
+     * @param {String} serviceName
+     * @param {String} description
+     * @param {Object} headers
+     * @return {Promise} 返回 Object(包含headers和data属性[Version 信息])
+     */
+
+  }, {
+    key: 'publishVersion',
+    value: function publishVersion(serviceName, description, headers) {
+      var body = {};
+      if (description) {
+        body.description = description;
+      }
+      return this.post(`/services/${serviceName}/versions`, body, headers || {});
+    }
+
+    /**
+     * 列出 version
+     * 
+     * Options:
+     * - limit
+     * - nextToken
+     * - startKey
+     * - direction
+     * 
+     * @param {String} serviceName 
+     * @param {Object} options 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性[Version 信息])
+     */
+
+  }, {
+    key: 'listVersions',
+    value: function listVersions(serviceName) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.get(`/services/${serviceName}/versions`, null, headers, options);
+    }
+
+    /**
+     * 删除 version
+     * 
+     * @param {String} serviceName 
+     * @param {String} versionId 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'deleteVersion',
+    value: function deleteVersion(serviceName, versionId) {
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.delete(`/services/${serviceName}/versions/${versionId}`, null, headers);
+    }
+
+    /**
+     * 创建 Alias
+     * 
+     * Options:
+     * - description
+     * - additionalVersionWeight
+     * 
+     * @param {String} serviceName 
+     * @param {String} aliasName 
+     * @param {String} versionId 
+     * @param {Object} options 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'createAlias',
+    value: function createAlias(serviceName, aliasName, versionId) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      options.aliasName = aliasName;
+      options.versionId = versionId;
+
+      return this.post(`/services/${serviceName}/aliases`, options, headers);
+    }
+
+    /**
+     * 删除 Alias
+     * 
+     * @param {String} serviceName 
+     * @param {String} aliasName 
+     * @param {String} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'deleteAlias',
+    value: function deleteAlias(serviceName, aliasName) {
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.delete(`/services/${serviceName}/aliases/${aliasName}`, null, headers);
+    }
+
+    /**
+     * 列出 alias
+     * 
+     * Options:
+     * - limit
+     * - nextToken
+     * - prefix
+     * - startKey
+     * 
+     * @param {String} serviceName 
+     * @param {Object} options 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'listAliases',
+    value: function listAliases(serviceName) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.get(`/services/${serviceName}/aliases`, null, headers, options);
+    }
+
+    /**
+     * 获得 alias
+     * 
+     * @param {String} serviceName 
+     * @param {String} aliasName 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'getAlias',
+    value: function getAlias(serviceName, aliasName) {
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.get(`/services/${serviceName}/aliases/${aliasName}`, null, headers);
+    }
+
+    /**
+     * 更新 alias
+     * 
+     * Options:
+     * - description
+     * - additionalVersionWeight
+     * 
+     * @param {String} serviceName 
+     * @param {String} aliasName 
+     * @param {String} versionId 
+     * @param {Object} options 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'updateAlias',
+    value: function updateAlias(serviceName, aliasName, versionId) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      if (versionId) {
+        options.versionId = versionId;
+      }
+      return this.put(`/services/${serviceName}/aliases/${aliasName}`, options, headers);
     }
 
     /**
