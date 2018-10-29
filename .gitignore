@@ -6,3 +6,4 @@ coverage
 test/config.js
 test/figures/*.zip
 doc/*
+.env
