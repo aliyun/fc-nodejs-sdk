@@ -1,6 +1,6 @@
 'use strict';
 
-const helper = require('../lib/helper.js')
+const helper = require('../lib/helper.js');
 const expect = require('expect.js');
 
 describe('helper test', function () {
@@ -23,6 +23,6 @@ describe('helper test', function () {
     var str = helper.composeStringToSign('GET', '/path/action with-escaped~chars_here.ext', headers, queires);
     expect(str).to.be('GET\n1bca714f406993b309bb87fabeb30a6b\ntext/json\ntoday\nx-fc-bar:xyz\nx-fc-foo:123\n/path/action with-escaped~chars_here.ext\nfoo=bar\nkey1=abc\nkey1=xyz\nkey2=123\nkey3 with-escaped~chars_here.ext=value with-escaped~chars_here.ext');
   });
-})
+});
 
 
