@@ -1,4 +1,10 @@
 
+2.0.6 / 2018-10-29
+==================
+
+  * add version support
+  * add initializer function when createFunction and updateFunction
+
 2.0.5 / 2018-09-19
 ==================
 
