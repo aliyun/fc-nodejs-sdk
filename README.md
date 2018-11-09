@@ -18,7 +18,7 @@ Notice
 -------------------
 We suggest using fc2，The main difference between fc and fc2 is:
 
-The response returned by the user is the following dict, for invoke function, data is bytes, for other apis, data is dict.
+The response returned by the user is the following object.
 
 ```js
 {
@@ -27,6 +27,10 @@ The response returned by the user is the following dict, for invoke function, da
 }
 
 ```
+for invoke function, data is the results returned by your code. By default, data is decoded by utf8, if you would like to get raw buffer, just set {rawBuf: true} in opts when you invoke function.
+
+Examples are shown in the code below, 
+for other apis, data is object.
 
 Install the official fc2 release version:
 
@@ -90,49 +94,6 @@ client.createService(serviceName).then(function(resp) {
 
 ### async/await (node >= 7.6)
 
-#### create function without initializer
-
-```js
-'use strict';
-
-const FCClient = require('@alicloud/fc2');
-
-var client = new FCClient('<account id>', {
-  accessKeyID: '<access key id>',
-  accessKeySecret: '<access key secret>',
-  region: 'cn-shanghai',
-});
-
-var serviceName = '<service name>';
-var funcName = '<function name>';
-
-async function test () {
-  try {
-    var resp = await client.createService(serviceName);
-    console.log('create service: %j', resp);
-
-    resp = await client.createFunction(serviceName, {
-      functionName: funcName,
-      handler: 'index.handler',
-      memorySize: 128,
-      runtime: 'nodejs4.4',
-      code: {
-        zipFile: fs.readFileSync('/tmp/index.zip', 'base64'),
-      },
-    });
-    console.log('create function: %j', resp);
-
-    resp = await client.invokeFunction(serviceName, funcName, 'event');
-    console.log('invoke function: %j', resp);
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-test().then();
-```
-
-#### create function with initializer
 ```js
 'use strict';
 
@@ -164,8 +125,12 @@ async function test () {
     });
     console.log('create function: %j', resp);
 
+    // by default , resp is decoded by utf8
     resp = await client.invokeFunction(serviceName, funcName, null);
     console.log('invoke function: %j', resp);
+
+    // respWithBuf is returned as buffer if isRawBuf is set to be true in opts
+    respWithBuf = await client.invokeFunction(serviceName, funcName, null, {}, 'LATEST', {rawBuf:true});
 
     uResp = await client.updateFunction(serviceName, funcName, {
       description: 'updated function desc',
