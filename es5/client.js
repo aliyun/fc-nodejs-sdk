@@ -28,7 +28,7 @@ function signString(source, secret) {
 
 function getServiceName(serviceName, qualifier) {
   if (qualifier) {
-    return `${serviceName}$${qualifier}`;
+    return `${serviceName}.${qualifier}`;
   }
   return serviceName;
 }
