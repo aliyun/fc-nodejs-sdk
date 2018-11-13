@@ -105,6 +105,7 @@ var Client = function () {
     value: function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+        var opts = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
         var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
@@ -166,36 +167,51 @@ var Client = function () {
                 debug('response status: %s', response.statusCode);
                 debug('response headers: %j', response.headers);
 
-                _context.next = 16;
+                if (!(!opts['rawBuf'] || response.headers['x-fc-error-type'])) {
+                  _context.next = 20;
+                  break;
+                }
+
+                _context.next = 17;
                 return httpx.read(response, 'utf8');
 
-              case 16:
+              case 17:
+                responseBody = _context.sent;
+                _context.next = 23;
+                break;
+
+              case 20:
+                _context.next = 22;
+                return httpx.read(response);
+
+              case 22:
                 responseBody = _context.sent;
 
+              case 23:
 
                 debug('response body: %s', responseBody);
 
                 contentType = response.headers['content-type'] || '';
 
                 if (!contentType.startsWith('application/json')) {
-                  _context.next = 27;
+                  _context.next = 33;
                   break;
                 }
 
-                _context.prev = 20;
+                _context.prev = 26;
 
                 responseBody = JSON.parse(responseBody);
-                _context.next = 27;
+                _context.next = 33;
                 break;
 
-              case 24:
-                _context.prev = 24;
-                _context.t0 = _context['catch'](20);
+              case 30:
+                _context.prev = 30;
+                _context.t0 = _context['catch'](26);
                 throw _context.t0;
 
-              case 27:
+              case 33:
                 if (!(response.statusCode < 200 || response.statusCode >= 300)) {
-                  _context.next = 34;
+                  _context.next = 40;
                   break;
                 }
 
@@ -207,21 +223,21 @@ var Client = function () {
                 err.code = responseBody.ErrorCode;
                 throw err;
 
-              case 34:
+              case 40:
                 return _context.abrupt('return', {
                   'headers': response.headers,
                   'data': responseBody
                 });
 
-              case 35:
+              case 41:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[20, 24]]);
+        }, _callee, this, [[26, 30]]);
       }));
 
-      function request(_x2, _x3, _x4, _x5) {
+      function request(_x3, _x4, _x5, _x6) {
         return _ref.apply(this, arguments);
       }
 
@@ -256,7 +272,9 @@ var Client = function () {
   }, {
     key: 'post',
     value: function post(path, body, headers, queries) {
-      return this.request('POST', path, queries, body, headers);
+      var opts = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.request('POST', path, queries, body, headers, opts);
     }
 
     /*!
@@ -563,13 +581,14 @@ var Client = function () {
     value: function invokeFunction(serviceName, functionName, event) {
       var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
       var qualifier = arguments[4];
+      var opts = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 
       if (event && typeof event !== 'string' && !Buffer.isBuffer(event)) {
         throw new TypeError('"event" must be String or Buffer');
       }
 
       var path = `/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/invocations`;
-      return this.post(path, event, headers);
+      return this.post(path, event, headers, null, opts);
     }
 
     /**
