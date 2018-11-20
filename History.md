@@ -1,4 +1,10 @@
 
+2.1.0 / 2018-11-20
+==================
+
+  * change delimiter to '.'
+  * support versioning
+
 2.0.7 / 2018-11-16
 ==================
 * add raw buffer mode for invoke function
