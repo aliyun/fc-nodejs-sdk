@@ -595,6 +595,7 @@ var Client = function () {
      * 创建Trigger
      *
      * Options:
+     * - description
      * - invocationRole
      * - sourceArn
      * - triggerType
