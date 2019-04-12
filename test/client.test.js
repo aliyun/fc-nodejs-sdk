@@ -98,6 +98,16 @@ describe('client test', function () {
       accessKeyID: 'accessKeyID',
       accessKeySecret: 'accessKeySecret',
       region: 'cn-shanghai',
+      endpoint: 'http://localhost:8080',
+      secure: true,
+      internal: true
+    });
+    expect(client.endpoint).to.be('http://localhost:8080');
+
+    client = new FunctionComputeClient('accountid', {
+      accessKeyID: 'accessKeyID',
+      accessKeySecret: 'accessKeySecret',
+      region: 'cn-shanghai',
       timeout: 20000
     });
     expect(client.timeout).to.be(20000);
