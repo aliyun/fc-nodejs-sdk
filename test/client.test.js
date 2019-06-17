@@ -980,4 +980,26 @@ describe('client test', function () {
       expect(Object.keys(resp.data.tags).length).to.equal(0);
     });
   });
+
+  describe('list reserved capacity should ok', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+
+    it('listReservedCapacities should ok', async function () {
+      const response = await client.listReservedCapacities();
+      expect(response.data).to.be.ok();
+      expect(response.data.reservedCapacities).to.be.ok();
+      for (var i = 0; i < response.data.reservedCapacities.length; i++) {
+        const elem = response.data.reservedCapacities[i];
+        expect(elem.instanceId.length).to.be.equal(22);
+        expect(elem.cu).to.be.above(0);
+        expect(elem.Deadline>elem.CreatedTime).to.be.true;
+        expect(elem).to.have.property('lastModifiedTime');
+        expect(elem).to.have.property('isRefunded');
+      }
+    });
+  });
 });
