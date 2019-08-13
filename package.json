@@ -3,6 +3,7 @@
   "version": "2.1.1",
   "description": "Aliyun Function Compute API SDK2",
   "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
     "test": "make test",
     "build-es5": "babel lib/ -d es5/"
@@ -20,6 +21,7 @@
     "kitx": "^1.2.0"
   },
   "devDependencies": {
+    "@types/node": "^12.7.1",
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
@@ -34,6 +36,7 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "lib",
     "es5"
   ],
