@@ -350,6 +350,14 @@ var Client = function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var headers = arguments[1];
 
+      if (options.tags !== undefined) {
+        for (var k in options.tags) {
+          if (options.tags.hasOwnProperty(k)) {
+            options[`tag_${k}`] = options.tags[k];
+          }
+        }
+        delete options.tags;
+      }
       return this.get('/services', options, headers);
     }
 
@@ -963,6 +971,68 @@ var Client = function () {
       return this.put(`/services/${serviceName}/aliases/${aliasName}`, options, headers);
     }
 
+    /**
+     * 给fc资源打tag
+     * 
+     * @param {String} resourceArn Resource ARN. Either full ARN or partial ARN.
+     * @param {Object} tags  A list of tag keys. At least 1 tag is required. At most 20. Tag key is required, but tag value is optional.
+     * @param {Object} options 
+     * @param {Object} headers 
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'tagResource',
+    value: function tagResource(resourceArn, tags) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      options.resourceArn = resourceArn;
+      options.tags = tags;
+
+      return this.post('/tag', options, headers);
+    }
+
+    /**
+    * 给fc资源取消tag
+    * 
+    * @param {String} resourceArn Resource ARN. Either full ARN or partial ARN.
+    * @param {Object} tagkeys  A list of tag keys. At least 1 tag key is required if all=false. At most 20.
+    * @param {Boolean} all Remove all tags at once. Default value is false. Accept value: true or false.
+    * @param {Object} options 
+    * @param {Object} headers 
+    * @return {Promise} 返回 Object(包含headers和data属性)
+    */
+
+  }, {
+    key: 'untagResource',
+    value: function untagResource(resourceArn, tagKeys) {
+      var all = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      options.resourceArn = resourceArn;
+      options.tagKeys = tagKeys;
+      options.all = all;
+      return this.request('DELETE', '/tag', null, options, headers);
+    }
+
+    /**
+    * 获取某个资源的所有tag
+    * 
+    * @param {Object} options 
+    * @param {Object} headers 
+    * @return {Promise} 返回 Object(包含headers和data属性)
+    */
+
+  }, {
+    key: 'getResourceTags',
+    value: function getResourceTags() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      return this.get('/tag', options, headers);
+    }
     /**
      * 获得Header 签名
      *
