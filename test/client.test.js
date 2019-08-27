@@ -233,9 +233,9 @@ describe('client test', function () {
   describe('function should ok', function () {
     const functionName = 'hello-world';
     const initFunctionName = 'counter';
-    const functionWithBufResp = "test-buf-resp"
-    const functionWithHandledErr = "test-func-with-handled-err"
-    const functionWithUnhandledErr = "test-func-with-unhandled-err"
+    const functionWithBufResp = 'test-buf-resp';
+    const functionWithHandledErr = 'test-func-with-handled-err';
+    const functionWithUnhandledErr = 'test-func-with-unhandled-err';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
       accessKeySecret: ACCESS_KEY_SECRET,
@@ -245,7 +245,7 @@ describe('client test', function () {
     before(async function () {
       // clean up
       try {
-        await client.deleteService(serviceName)
+        await client.deleteService(serviceName);
       } catch (ex) {
         // Ignore
       }
@@ -365,13 +365,13 @@ describe('client test', function () {
 
     it('invokeFunction should faster', async function () {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'));
-      expect(response.data).a('string')
+      expect(response.data).a('string');
       expect(response.data).to.be('hello world');
     });
 
     it('invokeFunction with rawBuf=false should return string', async function () {
       const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {}, 'LATEST', {rawBuf:false});
-      expect(response.data).a('string')
+      expect(response.data).a('string');
       expect(response.data).to.be('hello world');
     });
 
@@ -391,7 +391,7 @@ describe('client test', function () {
       expect(func.data).to.have.property('functionName', functionWithBufResp);
 
       const response = await client.invokeFunction(serviceName, functionWithBufResp, Buffer.from('world'), {}, 'LATEST', {rawBuf: true});
-      expect(response.data).an(Buffer)
+      expect(response.data).an(Buffer);
       expect(response.data.toString()).to.be('world');
     });
 
@@ -411,7 +411,7 @@ describe('client test', function () {
       expect(func.data).to.have.property('functionName', functionWithHandledErr);
 
       const response = await client.invokeFunction(serviceName, functionWithHandledErr, Buffer.from('world'), {}, 'LATEST', {rawBuf: true});
-      expect(response.data).not.an(Buffer)
+      expect(response.data).not.an(Buffer);
       expect(JSON.stringify(response.data)).to.be(JSON.stringify({ 'errorMessage': 'This is a handled error' }));
     });
 
@@ -431,8 +431,8 @@ describe('client test', function () {
       expect(func.data).to.have.property('functionName', functionWithUnhandledErr);
 
       const response = await client.invokeFunction(serviceName, functionWithUnhandledErr, Buffer.from('world'), {}, 'LATEST', {rawBuf: true});
-      expect(response.data).not.an(Buffer)
-      expect(JSON.stringify(response.data)).contain(JSON.stringify({ 'errorMessage': 'Process exited unexpectedly before completing request' }).slice(0,-2))
+      expect(response.data).not.an(Buffer);
+      expect(JSON.stringify(response.data)).contain(JSON.stringify({ 'errorMessage': 'Process exited unexpectedly before completing request' }).slice(0,-2));
     });
 
     it('invokeFunction async should ok', async function () {
@@ -913,6 +913,71 @@ describe('client test', function () {
     it('delete version', async function () {
       const res = await client.deleteVersion(serviceName, '2');
       expect(res.data).to.be('');
+    });
+  });
+
+  describe('tag test should be ok', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+    const tagServiceName = `${serviceName}_tag_test`;
+    before(async function () {
+      const service = await client.createService(tagServiceName);
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', tagServiceName);
+    });
+
+    after(async function () {
+      await client.deleteService(tagServiceName);
+    });
+
+    it('tagResource should ok', async function () {
+      await client.tagResource(`services/${tagServiceName}`, {k1:'v1', k2:'v2'});
+      const resp = await client.getResourceTags({
+        'resourceArn': `services/${tagServiceName}`
+      });
+      expect(resp.data).to.be.ok();
+      expect(resp.data.tags).to.be.ok();
+      expect(resp.data.tags.k1).to.be('v1');
+      expect(resp.data.tags.k2).to.be('v2');
+      var lresp = await client.listServices({
+        tags:{
+          k1: 'v1', 
+          k2: 'v2',
+        }
+      });
+
+      expect(lresp.data).to.be.ok();
+      expect(lresp.data.services).to.be.ok();
+      expect(lresp.data.services.length).to.above(0);
+
+      lresp = await client.listServices({
+        tags: {
+          k3: 'v3'
+        }
+      });
+
+      expect(lresp.data).to.be.ok();
+      expect(lresp.data.services).to.be.ok();
+      expect(lresp.data.services.length).to.equal(0);
+    });
+
+    it('untagResource should ok', async function () {
+      await client.untagResource(`services/${tagServiceName}`, ['k1'], false);
+      var resp = await client.getResourceTags({
+        'resourceArn': `services/${tagServiceName}`
+      });
+      expect(resp.data).to.be.ok();
+      expect(resp.data.tags).to.be.ok();
+      expect(resp.data.tags.k1).to.be(undefined);
+      expect(resp.data.tags.k2).to.be('v2');
+      await client.untagResource(`services/${tagServiceName}`, [], true);
+      resp = await client.getResourceTags({
+        'resourceArn': `services/${tagServiceName}`
+      });
+      expect(Object.keys(resp.data.tags).length).to.equal(0);
     });
   });
 });
