@@ -1,9 +1,9 @@
 language: node_js
 
 node_js:
+  - "10"
   - "8"
   - "6"
-  - "4"
 
 env:
   - TEST_COV=true
@@ -11,11 +11,11 @@ env:
 
 matrix:
   exclude:
-    - node_js: "4"
-      env: TEST_COV=true
     - node_js: "6"
       env: TEST_COV=true
     - node_js: "8"
+      env: TEST_COV=false
+    - node_js: "10"
       env: TEST_COV=false
 
 script:
