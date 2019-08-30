@@ -1033,6 +1033,27 @@ var Client = function () {
 
       return this.get('/tag', options, headers);
     }
+
+    /**
+     * 获取reservedCapacity列表
+     *
+     * Options:
+     * - limit
+     * - nextToken
+     *
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Object(包含headers和data属性[reservedCapacities 列表])
+     */
+
+  }, {
+    key: 'listReservedCapacities',
+    value: function listReservedCapacities() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments[1];
+
+      return this.get('/reservedCapacities', options, headers);
+    }
+
     /**
      * 获得Header 签名
      *
