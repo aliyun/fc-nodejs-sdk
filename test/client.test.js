@@ -944,7 +944,7 @@ describe('client test', function () {
       expect(resp.data.tags.k2).to.be('v2');
       var lresp = await client.listServices({
         tags:{
-          k1: 'v1', 
+          k1: 'v1',
           k2: 'v2',
         }
       });
@@ -999,6 +999,52 @@ describe('client test', function () {
         expect(elem.Deadline>elem.CreatedTime).to.be.true;
         expect(elem).to.have.property('lastModifiedTime');
         expect(elem).to.have.property('isRefunded');
+      }
+    });
+  });
+
+  describe('manage provision config should be ok', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+    const functionName = 'testProvisionConfig';
+
+    before(async function () {
+      await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
+    });
+
+    after(async function () {
+      await cleanupResources(client, serviceName, functionName);
+    });
+
+    it('putProvisionConfigs should be ok', async function() {
+      const response = await client.putProvisionConfig(serviceName, functionName, {
+        target: 1,
+      });
+      expect(response.data).to.be.ok();
+      expect(response.data.target).to.be.equal(1);
+      expect(response.data.resource).to.be.ok();
+    });
+
+    it('getProvisionConfig should be ok', async function() {
+      const response = await client.getProvisionConfig(serviceName, functionName);
+      expect(response.data).to.be.ok();
+      expect(response.data.target).to.be.equal(1);
+      expect(response.data.current).to.be.equal(1);
+      expect(response.data.resource).to.be.ok();
+    });
+
+    it('listProvisionConfigs should ok', async function () {
+      const response = await client.listProvisionConfigs();
+      expect(response.data).to.be.ok();
+      expect(response.data.provisionConfigs).to.be.ok();
+      for (var i = 0; i < response.data.provisionConfigs.length; i++) {
+        const elem = response.data.provisionConfigs[i];
+        expect(elem.target).to.be.equal(1);
+        expect(elem.current).to.be.equal(1);
+        expect(elem.resource).to.be.ok();
       }
     });
   });
