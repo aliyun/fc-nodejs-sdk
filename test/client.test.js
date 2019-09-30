@@ -186,9 +186,17 @@ describe('client test', function () {
             await client.deleteFunction(service.serviceName, fun.functionName);
           }
           await client.deleteService(service.serviceName);
+          await client.deleteFunction('fc-nodejs-sdk-unit-test', 'testProvisionConfig');
+          await client.deleteService('fc-nodejs-sdk-unit-test');
         }
       }
     });
+
+    it('cu should ok', async function () {
+      await client.deleteFunction('fc-nodejs-sdk-unit-test', 'testProvisionConfig');
+      await client.deleteService('fc-nodejs-sdk-unit-test');
+    });
+
 
     it('createService should ok', async function () {
       const service = await client.createService(serviceName);
