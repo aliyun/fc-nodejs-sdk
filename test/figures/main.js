@@ -45,3 +45,8 @@ exports.http_handler = function (request, response, context) {
     response.send(JSON.stringify(retBody));
   });
 };
+
+module.exports.http_function_err_handler = function (request, response, context) {
+  respose.send(new Buffer('hello world'));
+
+};
