@@ -47,6 +47,7 @@ exports.http_handler = function (request, response, context) {
 };
 
 module.exports.http_function_err_handler = function (request, response, context) {
-  respose.send(new Buffer('hello world'));
+  console.log(context.toSting());
+  response.send(new Buffer('hello world'));
 
 };

@@ -687,8 +687,7 @@ describe('client test', function () {
 
       const funcPath = `/proxy/${serviceName}/${functionName}/action`;
       try {
-        const resp = await client.get(funcPath);
-
+        await client.get(funcPath);
       } catch (ex) {
         expect(ex.name).to.be('FCundefinedError');
         expect(ex.message).to.match(/GET .* failed with 502\. requestid: .{36}, message: Process exited unexpectedly before completing request.*/);
