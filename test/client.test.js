@@ -192,12 +192,6 @@ describe('client test', function () {
       }
     });
 
-    it('cu should ok', async function () {
-      await client.deleteFunction('fc-nodejs-sdk-unit-test', 'testProvisionConfig');
-      await client.deleteService('fc-nodejs-sdk-unit-test');
-    });
-
-
     it('createService should ok', async function () {
       const service = await client.createService(serviceName);
       expect(service.data).to.be.ok();
@@ -619,6 +613,8 @@ describe('client test', function () {
     });
 
     after(async function () {
+      await client.deleteTrigger(serviceName, 'http_trigger_with_function_error', 'http-trigger');
+      await client.deleteFunction(serviceName, 'http_trigger_with_function_error');
       await cleanupResources(client, serviceName, functionName, triggerName);
     });
 
@@ -664,6 +660,41 @@ describe('client test', function () {
       var body = JSON.parse(resp.data);
       expect(body).to.have.property('method', 'GET');
     });
+
+    it('http trigger with function error passing through should be ok', async function () {
+      const functionName = 'http_trigger_with_function_error';
+      const handlerName = 'main.http_function_err_handler';
+      const func = await client.createFunction(serviceName, {
+        functionName: functionName,
+        description: 'function desc',
+        memorySize: 128,
+        handler: handlerName,
+        runtime: 'nodejs6',
+        timeout: 10,
+        code: {
+          zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
+        }
+      });
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', functionName);
+
+      const triggerConfig = {
+        'authType': 'anonymous',
+        'methods': ['GET', 'POST', 'PUT']
+      };
+
+      await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig);
+
+      const funcPath = `/proxy/${serviceName}/${functionName}/action`;
+      try {
+        const resp = await client.get(funcPath);
+
+      } catch (ex) {
+        expect(ex.name).to.be('FCundefinedError');
+        expect(ex.message).to.match(/GET .* failed with 502\. requestid: .{36}, message: Process exited unexpectedly before completing request.*/);
+      }
+    });
+
   });
 
   describe('oss trigger should be ok', function () {
