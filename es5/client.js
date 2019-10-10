@@ -107,7 +107,7 @@ var Client = function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var opts = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-        var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, err;
+        var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, errMsg, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -212,25 +212,31 @@ var Client = function () {
 
               case 33:
                 if (!(response.statusCode < 200 || response.statusCode >= 300)) {
-                  _context.next = 40;
+                  _context.next = 41;
                   break;
                 }
 
                 code = response.statusCode;
                 requestid = response.headers['x-fc-request-id'];
-                err = new Error(`${method} ${path} failed with ${code}. requestid: ${requestid}, message: ${responseBody.ErrorMessage}.`);
+
+                if (responseBody.ErrorMessage) {
+                  errMsg = responseBody.ErrorMessage;
+                } else {
+                  errMsg = responseBody.errorMessage;
+                }
+                err = new Error(`${method} ${path} failed with ${code}. requestid: ${requestid}, message: ${errMsg}.`);
 
                 err.name = `FC${responseBody.ErrorCode}Error`;
                 err.code = responseBody.ErrorCode;
                 throw err;
 
-              case 40:
+              case 41:
                 return _context.abrupt('return', {
                   'headers': response.headers,
                   'data': responseBody
                 });
 
-              case 41:
+              case 42:
               case 'end':
                 return _context.stop();
             }
