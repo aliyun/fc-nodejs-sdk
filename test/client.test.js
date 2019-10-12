@@ -22,7 +22,9 @@ describe('client test', function () {
       b: 'xyz',
       'foo-bar': '123 ~ xyz-a'
     };
-    var signature = FunctionComputeClient.getSignature(ACCOUNT_ID, ACCESS_KEY_SECRET, 'GET', '/hello/world', { date: 'today' }, queries);
+    var signature = FunctionComputeClient.getSignature(ACCOUNT_ID, ACCESS_KEY_SECRET, 'GET', '/hello/world', {
+      date: 'today'
+    }, queries);
     expect(signature).to.be.ok();
     expect(signature).to.contain(`FC ${ACCOUNT_ID}:`);
   });
@@ -184,6 +186,8 @@ describe('client test', function () {
             await client.deleteFunction(service.serviceName, fun.functionName);
           }
           await client.deleteService(service.serviceName);
+          await client.deleteFunction('fc-nodejs-sdk-unit-test', 'testProvisionConfig');
+          await client.deleteService('fc-nodejs-sdk-unit-test');
         }
       }
     });
@@ -370,7 +374,9 @@ describe('client test', function () {
     });
 
     it('invokeFunction with rawBuf=false should return string', async function () {
-      const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {}, 'LATEST', {rawBuf:false});
+      const response = await client.invokeFunction(serviceName, functionName, Buffer.from('world'), {}, 'LATEST', {
+        rawBuf: false
+      });
       expect(response.data).a('string');
       expect(response.data).to.be('hello world');
     });
@@ -390,7 +396,9 @@ describe('client test', function () {
       expect(func.data).to.be.ok();
       expect(func.data).to.have.property('functionName', functionWithBufResp);
 
-      const response = await client.invokeFunction(serviceName, functionWithBufResp, Buffer.from('world'), {}, 'LATEST', {rawBuf: true});
+      const response = await client.invokeFunction(serviceName, functionWithBufResp, Buffer.from('world'), {}, 'LATEST', {
+        rawBuf: true
+      });
       expect(response.data).an(Buffer);
       expect(response.data.toString()).to.be('world');
     });
@@ -410,9 +418,13 @@ describe('client test', function () {
       expect(func.data).to.be.ok();
       expect(func.data).to.have.property('functionName', functionWithHandledErr);
 
-      const response = await client.invokeFunction(serviceName, functionWithHandledErr, Buffer.from('world'), {}, 'LATEST', {rawBuf: true});
+      const response = await client.invokeFunction(serviceName, functionWithHandledErr, Buffer.from('world'), {}, 'LATEST', {
+        rawBuf: true
+      });
       expect(response.data).not.an(Buffer);
-      expect(JSON.stringify(response.data)).to.be(JSON.stringify({ 'errorMessage': 'This is a handled error' }));
+      expect(JSON.stringify(response.data)).to.be(JSON.stringify({
+        'errorMessage': 'This is a handled error'
+      }));
     });
 
     it('invokeFunction with unhandled error should decode with utf8', async function () {
@@ -430,9 +442,13 @@ describe('client test', function () {
       expect(func.data).to.be.ok();
       expect(func.data).to.have.property('functionName', functionWithUnhandledErr);
 
-      const response = await client.invokeFunction(serviceName, functionWithUnhandledErr, Buffer.from('world'), {}, 'LATEST', {rawBuf: true});
+      const response = await client.invokeFunction(serviceName, functionWithUnhandledErr, Buffer.from('world'), {}, 'LATEST', {
+        rawBuf: true
+      });
       expect(response.data).not.an(Buffer);
-      expect(JSON.stringify(response.data)).contain(JSON.stringify({ 'errorMessage': 'Process exited unexpectedly before completing request' }).slice(0,-2));
+      expect(JSON.stringify(response.data)).contain(JSON.stringify({
+        'errorMessage': 'Process exited unexpectedly before completing request'
+      }).slice(0, -2));
     });
 
     it('invokeFunction async should ok', async function () {
@@ -597,12 +613,14 @@ describe('client test', function () {
     });
 
     after(async function () {
+      await client.deleteTrigger(serviceName, 'http_trigger_with_function_error', 'http-trigger');
+      await client.deleteFunction(serviceName, 'http_trigger_with_function_error');
       await cleanupResources(client, serviceName, functionName, triggerName);
     });
 
     it('createTrigger should be ok', async function () {
       const triggerConfig = {
-        'authType': 'function',		// `function` level here to make sure working well for signature.
+        'authType': 'function', // `function` level here to make sure working well for signature.
         'methods': ['GET', 'POST', 'PUT']
       };
       await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig);
@@ -642,6 +660,40 @@ describe('client test', function () {
       var body = JSON.parse(resp.data);
       expect(body).to.have.property('method', 'GET');
     });
+
+    it('http trigger with function error passing through should be ok', async function () {
+      const functionName = 'http_trigger_with_function_error';
+      const handlerName = 'main.http_function_err_handler';
+      const func = await client.createFunction(serviceName, {
+        functionName: functionName,
+        description: 'function desc',
+        memorySize: 128,
+        handler: handlerName,
+        runtime: 'nodejs6',
+        timeout: 10,
+        code: {
+          zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
+        }
+      });
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', functionName);
+
+      const triggerConfig = {
+        'authType': 'anonymous',
+        'methods': ['GET', 'POST', 'PUT']
+      };
+
+      await createTrigger(client, serviceName, functionName, triggerName, 'http', triggerConfig);
+
+      const funcPath = `/proxy/${serviceName}/${functionName}/action`;
+      try {
+        await client.get(funcPath);
+      } catch (ex) {
+        expect(ex.name).to.be('FCundefinedError');
+        expect(ex.message).to.match(/GET .* failed with 502\. requestid: .{36}, message: Process exited unexpectedly before completing request.*/);
+      }
+    });
+
   });
 
   describe('oss trigger should be ok', function () {
@@ -746,13 +798,11 @@ describe('client test', function () {
     it('updateCustomDomain should be ok', async function () {
       const customDomain = await client.updateCustomDomain(domainName, {
         routeConfig: {
-          routes: [
-            {
-              path: '/',
-              serviceName: 's1',
-              functionName: 'f1',
-            }
-          ]
+          routes: [{
+            path: '/',
+            serviceName: 's1',
+            functionName: 'f1',
+          }]
         },
       });
       expect(customDomain.data).to.be.ok();
@@ -803,46 +853,47 @@ describe('client test', function () {
     });
 
     it('create alias', async function () {
-      const res = await client.createAlias(serviceName, aliasName, '1',
-        {
-          'description': 'test alias',
-          'additionalVersionWeight': {
-            '1': 1
-          }
-        });
+      const res = await client.createAlias(serviceName, aliasName, '1', {
+        'description': 'test alias',
+        'additionalVersionWeight': {
+          '1': 1
+        }
+      });
 
       expect(res.data.aliasName).to.be(aliasName);
       expect(res.data.versionId).to.be('1');
       expect(res.data.description).to.be('test alias');
-      expect(res.data.additionalVersionWeight).to.eql({ '1': 1 });
+      expect(res.data.additionalVersionWeight).to.eql({
+        '1': 1
+      });
     });
 
     it('update alias', async function () {
-      var res = await client.updateAlias(serviceName, aliasName, null,
-        {
-          'additionalVersionWeight': {
-            '2': 0.3
-          },
-          'description': ''
-        }
-      );
+      var res = await client.updateAlias(serviceName, aliasName, null, {
+        'additionalVersionWeight': {
+          '2': 0.3
+        },
+        'description': ''
+      });
       expect(res.data.aliasName).to.be(aliasName);
       expect(res.data.versionId).to.be('1');
       expect(res.data.description).to.be('');
-      expect(res.data.additionalVersionWeight).to.eql({ '2': 0.3 });
+      expect(res.data.additionalVersionWeight).to.eql({
+        '2': 0.3
+      });
 
-      res = await client.updateAlias(serviceName, aliasName, '2',
-        {
-          'additionalVersionWeight': {
-            '2': 0.5
-          }
+      res = await client.updateAlias(serviceName, aliasName, '2', {
+        'additionalVersionWeight': {
+          '2': 0.5
         }
-      );
+      });
 
       expect(res.data.aliasName).to.be(aliasName);
       expect(res.data.versionId).to.be('2');
       expect(res.data.description).to.be('');
-      expect(res.data.additionalVersionWeight).to.eql({ '2': 0.5 });
+      expect(res.data.additionalVersionWeight).to.eql({
+        '2': 0.5
+      });
     });
 
     it('get alias', async function () {
@@ -851,7 +902,9 @@ describe('client test', function () {
       expect(res.data.aliasName).to.be(aliasName);
       expect(res.data.versionId).to.be('2');
       expect(res.data.description).to.be('');
-      expect(res.data.additionalVersionWeight).to.eql({ '2': 0.5 });
+      expect(res.data.additionalVersionWeight).to.eql({
+        '2': 0.5
+      });
     });
 
     it('list aliases', async function () {
@@ -860,7 +913,9 @@ describe('client test', function () {
       expect(res.data.aliases).to.length(1);
       expect(res.data.aliases[0].versionId).to.be('2');
       expect(res.data.aliases[0].description).to.be('');
-      expect(res.data.aliases[0].additionalVersionWeight).to.eql({ '2': 0.5 });
+      expect(res.data.aliases[0].additionalVersionWeight).to.eql({
+        '2': 0.5
+      });
     });
 
     it('delete alias', async function () {
@@ -934,7 +989,10 @@ describe('client test', function () {
     });
 
     it('tagResource should ok', async function () {
-      await client.tagResource(`services/${tagServiceName}`, {k1:'v1', k2:'v2'});
+      await client.tagResource(`services/${tagServiceName}`, {
+        k1: 'v1',
+        k2: 'v2'
+      });
       const resp = await client.getResourceTags({
         'resourceArn': `services/${tagServiceName}`
       });
@@ -943,7 +1001,7 @@ describe('client test', function () {
       expect(resp.data.tags.k1).to.be('v1');
       expect(resp.data.tags.k2).to.be('v2');
       var lresp = await client.listServices({
-        tags:{
+        tags: {
           k1: 'v1',
           k2: 'v2',
         }
@@ -996,7 +1054,7 @@ describe('client test', function () {
         const elem = response.data.reservedCapacities[i];
         expect(elem.instanceId.length).to.be.equal(22);
         expect(elem.cu).to.be.above(0);
-        expect(elem.Deadline>elem.CreatedTime).to.be.true;
+        expect(elem.Deadline > elem.CreatedTime).to.be.true;
         expect(elem).to.have.property('lastModifiedTime');
         expect(elem).to.have.property('isRefunded');
       }
@@ -1010,17 +1068,30 @@ describe('client test', function () {
       region: 'cn-shanghai'
     });
     const functionName = 'testProvisionConfig';
+    const aliasName = 'prod';
 
     before(async function () {
       await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
+      await client.publishVersion(serviceName, 'test version 1');
+      await client.createAlias(serviceName, aliasName, '1', {
+        'description': 'test alias',
+        'additionalVersionWeight': {
+          '1': 1
+        }
+      });
     });
 
     after(async function () {
+      await client.putProvisionConfig(serviceName, functionName, aliasName, {
+        target: 0,
+      });
+      await client.deleteVersion(serviceName, '1');
+      await client.deleteAlias(serviceName, aliasName);
       await cleanupResources(client, serviceName, functionName);
     });
 
-    it('putProvisionConfigs should be ok', async function() {
-      const response = await client.putProvisionConfig(serviceName, functionName, {
+    it('putProvisionConfigs should be ok', async function () {
+      const response = await client.putProvisionConfig(serviceName, functionName, aliasName, {
         target: 1,
       });
       expect(response.data).to.be.ok();
@@ -1028,22 +1099,23 @@ describe('client test', function () {
       expect(response.data.resource).to.be.ok();
     });
 
-    it('getProvisionConfig should be ok', async function() {
-      const response = await client.getProvisionConfig(serviceName, functionName);
+    it('getProvisionConfig should be ok', async function () {
+      const response = await client.getProvisionConfig(serviceName, functionName, aliasName);
       expect(response.data).to.be.ok();
       expect(response.data.target).to.be.equal(1);
-      expect(response.data.current).to.be.equal(1);
       expect(response.data.resource).to.be.ok();
     });
 
     it('listProvisionConfigs should ok', async function () {
-      const response = await client.listProvisionConfigs();
+      const response = await client.listProvisionConfigs({
+        'serviceName': serviceName,
+        'qualifier': aliasName,
+      });
       expect(response.data).to.be.ok();
       expect(response.data.provisionConfigs).to.be.ok();
       for (var i = 0; i < response.data.provisionConfigs.length; i++) {
         const elem = response.data.provisionConfigs[i];
         expect(elem.target).to.be.equal(1);
-        expect(elem.current).to.be.equal(1);
         expect(elem.resource).to.be.ok();
       }
     });
