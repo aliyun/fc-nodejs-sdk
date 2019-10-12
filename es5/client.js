@@ -30,6 +30,7 @@ function getServiceName(serviceName, qualifier) {
   if (qualifier) {
     return `${serviceName}.${qualifier}`;
   }
+
   return serviceName;
 }
 
@@ -106,7 +107,7 @@ var Client = function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var opts = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-        var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, err;
+        var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, errMsg, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -211,25 +212,31 @@ var Client = function () {
 
               case 33:
                 if (!(response.statusCode < 200 || response.statusCode >= 300)) {
-                  _context.next = 40;
+                  _context.next = 41;
                   break;
                 }
 
                 code = response.statusCode;
                 requestid = response.headers['x-fc-request-id'];
-                err = new Error(`${method} ${path} failed with ${code}. requestid: ${requestid}, message: ${responseBody.ErrorMessage}.`);
+
+                if (responseBody.ErrorMessage) {
+                  errMsg = responseBody.ErrorMessage;
+                } else {
+                  errMsg = responseBody.errorMessage;
+                }
+                err = new Error(`${method} ${path} failed with ${code}. requestid: ${requestid}, message: ${errMsg}.`);
 
                 err.name = `FC${responseBody.ErrorCode}Error`;
                 err.code = responseBody.ErrorCode;
                 throw err;
 
-              case 40:
+              case 41:
                 return _context.abrupt('return', {
                   'headers': response.headers,
                   'data': responseBody
                 });
 
-              case 41:
+              case 42:
               case 'end':
                 return _context.stop();
             }
@@ -579,7 +586,7 @@ var Client = function () {
      * @param {String} serviceName
      * @param {String} functionName
      * @param {Object} event event信息
-     * @param {Object} headers 
+     * @param {Object} headers
      * @param {String} qualifier
      * @return {Promise} 返回 Object(包含headers和data属性[返回Function的执行结果])
      */
@@ -705,16 +712,16 @@ var Client = function () {
     }
 
     /**
-       * 创建CustomDomain
-       *
-       * Options:
-       * - protocol 
-       * - routeConfig
-       *
-       * @param {String} domainName 域名
-       * @param {Object} options 选项，optional
-       * @return {Promise} 返回 Object(包含headers和data属性[CustomDomainResponse])
-       */
+     * 创建CustomDomain
+     *
+     * Options:
+     * - protocol
+     * - routeConfig
+     *
+     * @param {String} domainName 域名
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Object(包含headers和data属性[CustomDomainResponse])
+     */
 
   }, {
     key: 'createCustomDomain',
@@ -766,10 +773,10 @@ var Client = function () {
      * 更新CustomDomain信息
      *
      * Options:
-     * - protocol 
+     * - protocol
      * - routeConfig
      *
-     * @param {String} domainName 
+     * @param {String} domainName
      * @param {Object} options 选项，optional
      * @return {Promise} 返回 Object(包含headers和data属性[Service 信息])
      */
@@ -801,7 +808,7 @@ var Client = function () {
 
     /**
      * 创建 version
-     * 
+     *
      * @param {String} serviceName
      * @param {String} description
      * @param {Object} headers
@@ -820,16 +827,16 @@ var Client = function () {
 
     /**
      * 列出 version
-     * 
+     *
      * Options:
      * - limit
      * - nextToken
      * - startKey
      * - direction
-     * 
-     * @param {String} serviceName 
-     * @param {Object} options 
-     * @param {Object} headers 
+     *
+     * @param {String} serviceName
+     * @param {Object} options
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性[Version 信息])
      */
 
@@ -844,10 +851,10 @@ var Client = function () {
 
     /**
      * 删除 version
-     * 
-     * @param {String} serviceName 
-     * @param {String} versionId 
-     * @param {Object} headers 
+     *
+     * @param {String} serviceName
+     * @param {String} versionId
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -861,16 +868,16 @@ var Client = function () {
 
     /**
      * 创建 Alias
-     * 
+     *
      * Options:
      * - description
      * - additionalVersionWeight
-     * 
-     * @param {String} serviceName 
-     * @param {String} aliasName 
-     * @param {String} versionId 
-     * @param {Object} options 
-     * @param {Object} headers 
+     *
+     * @param {String} serviceName
+     * @param {String} aliasName
+     * @param {String} versionId
+     * @param {Object} options
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -888,10 +895,10 @@ var Client = function () {
 
     /**
      * 删除 Alias
-     * 
-     * @param {String} serviceName 
-     * @param {String} aliasName 
-     * @param {String} headers 
+     *
+     * @param {String} serviceName
+     * @param {String} aliasName
+     * @param {String} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -905,16 +912,16 @@ var Client = function () {
 
     /**
      * 列出 alias
-     * 
+     *
      * Options:
      * - limit
      * - nextToken
      * - prefix
      * - startKey
-     * 
-     * @param {String} serviceName 
-     * @param {Object} options 
-     * @param {Object} headers 
+     *
+     * @param {String} serviceName
+     * @param {Object} options
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -929,10 +936,10 @@ var Client = function () {
 
     /**
      * 获得 alias
-     * 
-     * @param {String} serviceName 
-     * @param {String} aliasName 
-     * @param {Object} headers 
+     *
+     * @param {String} serviceName
+     * @param {String} aliasName
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -946,16 +953,16 @@ var Client = function () {
 
     /**
      * 更新 alias
-     * 
+     *
      * Options:
      * - description
      * - additionalVersionWeight
-     * 
-     * @param {String} serviceName 
-     * @param {String} aliasName 
-     * @param {String} versionId 
-     * @param {Object} options 
-     * @param {Object} headers 
+     *
+     * @param {String} serviceName
+     * @param {String} aliasName
+     * @param {String} versionId
+     * @param {Object} options
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -973,11 +980,11 @@ var Client = function () {
 
     /**
      * 给fc资源打tag
-     * 
+     *
      * @param {String} resourceArn Resource ARN. Either full ARN or partial ARN.
      * @param {Object} tags  A list of tag keys. At least 1 tag is required. At most 20. Tag key is required, but tag value is optional.
-     * @param {Object} options 
-     * @param {Object} headers 
+     * @param {Object} options
+     * @param {Object} headers
      * @return {Promise} 返回 Object(包含headers和data属性)
      */
 
@@ -994,15 +1001,15 @@ var Client = function () {
     }
 
     /**
-    * 给fc资源取消tag
-    * 
-    * @param {String} resourceArn Resource ARN. Either full ARN or partial ARN.
-    * @param {Object} tagkeys  A list of tag keys. At least 1 tag key is required if all=false. At most 20.
-    * @param {Boolean} all Remove all tags at once. Default value is false. Accept value: true or false.
-    * @param {Object} options 
-    * @param {Object} headers 
-    * @return {Promise} 返回 Object(包含headers和data属性)
-    */
+     * 给fc资源取消tag
+     *
+     * @param {String} resourceArn Resource ARN. Either full ARN or partial ARN.
+     * @param {Object} tagkeys  A list of tag keys. At least 1 tag key is required if all=false. At most 20.
+     * @param {Boolean} all Remove all tags at once. Default value is false. Accept value: true or false.
+     * @param {Object} options
+     * @param {Object} headers
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
 
   }, {
     key: 'untagResource',
@@ -1018,12 +1025,12 @@ var Client = function () {
     }
 
     /**
-    * 获取某个资源的所有tag
-    * 
-    * @param {Object} options 
-    * @param {Object} headers 
-    * @return {Promise} 返回 Object(包含headers和data属性)
-    */
+     * 获取某个资源的所有tag
+     *
+     * @param {Object} options
+     * @param {Object} headers
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
 
   }, {
     key: 'getResourceTags',
@@ -1052,6 +1059,65 @@ var Client = function () {
       var headers = arguments[1];
 
       return this.get('/reservedCapacities', options, headers);
+    }
+
+    /**
+     * 获取账号下的 provisionConfigs 列表
+     *
+     * Options:
+     * - limit
+     * - nextToken
+     * - serviceName
+     * - qualifier
+     *
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[provisionConfigs 列表])
+     */
+
+  }, {
+    key: 'listProvisionConfigs',
+    value: function listProvisionConfigs() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments[1];
+
+      return this.get('/provision-configs', options, headers);
+    }
+
+    /**
+     * 获取单个函数的 provisionConfig
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[provisionConfig 信息])
+     */
+
+  }, {
+    key: 'getProvisionConfig',
+    value: function getProvisionConfig(serviceName, functionName, qualifier) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/provision-config`, null, headers);
+    }
+
+    /**
+     * 更新单个函数的 provisionConfig
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[provisionConfig 信息])
+     */
+
+  }, {
+    key: 'putProvisionConfig',
+    value: function putProvisionConfig(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.put(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/provision-config`, options, headers);
     }
 
     /**
