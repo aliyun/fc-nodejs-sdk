@@ -1,4 +1,10 @@
 
+2.2.0 / 2019-10-17
+==================
+
+  * add reserved capacity list interface
+  * fc support tag
+  * fc support provison mode
 2.1.1 / 2019-08-12
 ==================
 
