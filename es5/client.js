@@ -104,10 +104,10 @@ var Client = function () {
   }, {
     key: 'request',
     value: function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee(method, path, query, body) {
+      var _ref = _asyncToGenerator(_regenerator2.default.mark(function _callee(method, path, query, body) {
         var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var opts = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-        var url, postBody, buff, digest, md5, queriesToSign, signature, response, responseBody, contentType, code, requestid, errMsg, err;
+        var url, postBody, buff, digest, md5, isMiniEnv, queriesToSign, signature, proms, response, responseBody, contentType, code, requestid, errMsg, err;
         return _regenerator2.default.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -141,6 +141,12 @@ var Client = function () {
                   headers['content-md5'] = md5;
                   postBody = buff;
                 }
+                isMiniEnv = typeof my != 'undefined' && typeof my.request === 'function';
+
+                if (isMiniEnv) {
+                  headers['content-type'] = 'application/json';
+                  postBody = postBody.toString();
+                }
 
                 queriesToSign = null;
 
@@ -153,66 +159,95 @@ var Client = function () {
 
                 debug('request headers: %j', headers);
 
-                _context.next = 11;
-                return httpx.request(url, {
-                  method,
-                  timeout: this.timeout,
-                  headers,
-                  data: postBody
-                });
+                if (isMiniEnv) {
+                  proms = new Promise(function (resolve, reject) {
+                    my.request({
+                      url: url,
+                      method: method,
+                      headers: headers,
+                      data: postBody,
+                      dataType: 'json',
+                      success: function success(res) {
+                        resolve(res);
+                      },
+                      fail: function fail(err) {
+                        reject(err);
+                      }
+                    });
+                  });
+                } else {
+                  proms = httpx.request(url, {
+                    method,
+                    timeout: this.timeout,
+                    headers,
+                    data: postBody
+                  });
+                }
+                _context.next = 14;
+                return proms;
 
-              case 11:
+              case 14:
                 response = _context.sent;
 
 
                 debug('response status: %s', response.statusCode);
                 debug('response headers: %j', response.headers);
 
-                if (!(!opts['rawBuf'] || response.headers['x-fc-error-type'])) {
-                  _context.next = 20;
+                if (!isMiniEnv) {
+                  _context.next = 22;
                   break;
                 }
 
-                _context.next = 17;
-                return httpx.read(response, 'utf8');
-
-              case 17:
-                responseBody = _context.sent;
-                _context.next = 23;
+                responseBody = response.data;
+                response.statusCode = response.status;
+                _context.next = 41;
                 break;
 
-              case 20:
-                _context.next = 22;
+              case 22:
+                if (!(!opts['rawBuf'] || response.headers['x-fc-error-type'])) {
+                  _context.next = 28;
+                  break;
+                }
+
+                _context.next = 25;
+                return httpx.read(response, 'utf8');
+
+              case 25:
+                responseBody = _context.sent;
+                _context.next = 31;
+                break;
+
+              case 28:
+                _context.next = 30;
                 return httpx.read(response);
 
-              case 22:
+              case 30:
                 responseBody = _context.sent;
 
-              case 23:
-
+              case 31:
                 debug('response body: %s', responseBody);
 
                 contentType = response.headers['content-type'] || '';
 
                 if (!contentType.startsWith('application/json')) {
-                  _context.next = 33;
+                  _context.next = 41;
                   break;
                 }
 
-                _context.prev = 26;
+                _context.prev = 34;
 
                 responseBody = JSON.parse(responseBody);
-                _context.next = 33;
+                _context.next = 41;
                 break;
 
-              case 30:
-                _context.prev = 30;
-                _context.t0 = _context['catch'](26);
+              case 38:
+                _context.prev = 38;
+                _context.t0 = _context['catch'](34);
                 throw _context.t0;
 
-              case 33:
+              case 41:
                 if (!(response.statusCode < 200 || response.statusCode >= 300)) {
-                  _context.next = 41;
+                  _context.next = 49;
                   break;
                 }
 
@@ -230,18 +265,18 @@ var Client = function () {
                 err.code = responseBody.ErrorCode;
                 throw err;
 
-              case 41:
+              case 49:
                 return _context.abrupt('return', {
                   'headers': response.headers,
                   'data': responseBody
                 });
 
-              case 42:
+              case 50:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[26, 30]]);
+        }, _callee, this, [[34, 38]]);
       }));
 
       function request(_x3, _x4, _x5, _x6) {
