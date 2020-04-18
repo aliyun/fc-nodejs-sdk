@@ -1,6 +1,6 @@
 {
   "name": "@alicloud/fc2",
-  "version": "2.1.1",
+  "version": "2.2.1",
   "description": "Aliyun Function Compute API SDK2",
   "main": "index.js",
   "scripts": {

@@ -130,15 +130,22 @@ var Client = function () {
                   } else if (typeof body === 'string') {
                     buff = new Buffer(body, 'utf8');
                     headers['content-type'] = 'application/octet-stream';
+                  } else if ('function' === typeof body.pipe) {
+                    buff = body;
+                    headers['content-type'] = 'application/octet-stream';
                   } else {
                     buff = new Buffer(JSON.stringify(body), 'utf8');
                     headers['content-type'] = 'application/json';
                   }
-                  digest = kitx.md5(buff, 'hex');
-                  md5 = new Buffer(digest, 'utf8').toString('base64');
 
-                  headers['content-length'] = buff.length;
-                  headers['content-md5'] = md5;
+                  if ('function' !== typeof body.pipe) {
+                    digest = kitx.md5(buff, 'hex');
+                    md5 = new Buffer(digest, 'utf8').toString('base64');
+
+
+                    headers['content-length'] = buff.length;
+                    headers['content-md5'] = md5;
+                  }
                   postBody = buff;
                 }
 
