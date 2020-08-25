@@ -444,6 +444,7 @@ var Client = function () {
      * - runtime
      * - timeout
      * - initializationTimeout
+     * - instanceType
      *
      * @param {String} serviceName 服务名
      * @param {Object} options Function配置
@@ -473,6 +474,10 @@ var Client = function () {
 
       if (opts.initializer) {
         opts.initializer = String(opts.initializer);
+      }
+
+      if (opts.instanceType) {
+        opts.instanceType = String(opts.instanceType);
       }
 
       if (opts.memorySize) {
