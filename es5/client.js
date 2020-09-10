@@ -1128,6 +1128,90 @@ var Client = function () {
     }
 
     /**
+     * 删除单个函数的 asyncConfig
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'deleteFunctionAsyncConfig',
+    value: function deleteFunctionAsyncConfig(serviceName, functionName, qualifier) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.delete(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/async-invoke-config`, null, headers);
+    }
+
+    /**
+     * 获取账号下的 asyncConfigs 列表
+     *
+     * Options:
+     * - limit
+     * - nextToken
+     *
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[asyncConfigs 列表])
+     */
+
+  }, {
+    key: 'listFunctionAsyncConfigs',
+    value: function listFunctionAsyncConfigs(serviceName, functionName) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.get(`/services/${serviceName}/functions/${functionName}/async-invoke-configs`, options, headers);
+    }
+
+    /**
+     * 获取单个函数的 asyncConfig
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[asyncConfig 信息])
+     */
+
+  }, {
+    key: 'getFunctionAsyncConfig',
+    value: function getFunctionAsyncConfig(serviceName, functionName, qualifier) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/async-invoke-config`, null, headers);
+    }
+
+    /**
+     * 更新单个函数的 asyncConfig
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier 可选
+     * @param {Object} options 选项，optional
+     * Options:
+     * - maxAsyncEventAgeInSeconds
+     * - maxAsyncRetryAttempts
+     * - {Object} destinationConfig
+     *    - {Object} onSuccess
+     *        - destination
+     *    - {Object} onFailure
+     *        - destination
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[asyncConfig 信息])
+     */
+
+  }, {
+    key: 'putFunctionAsyncConfig',
+    value: function putFunctionAsyncConfig(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.put(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/async-invoke-config`, options, headers);
+    }
+
+    /**
      * 获得Header 签名
      *
      * @param {String} accessKeyID

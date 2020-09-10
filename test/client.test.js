@@ -1120,4 +1120,63 @@ describe('client test', function () {
       }
     });
   });
+
+  describe('manage function async config should be ok', function () {
+
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: 'cn-shanghai'
+    });
+    const functionName = "asyncTest"
+    const asyncConfig = {
+      destinationConfig : {
+        onSuccess: {
+          destination: `acs:mns:cn-shanghai:${ACCOUNT_ID}:/queues/sth/messages`
+        }
+      },
+      maxAsyncRetryAttempts: 1,
+      maxAsyncEventAgeInSeconds: 100
+    };
+    before(async function () {
+      await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
+    });
+
+    after(async function () {
+      await cleanupResources(client, serviceName, functionName);
+    });
+
+    it('putFunctionAsyncConfig should be ok', async function () {
+      const response = await client.putFunctionAsyncConfig(serviceName, functionName, "", asyncConfig);
+      console.log(response.data);
+      expect(response.data).to.be.ok();
+      expect(response.data.destinationConfig.onSuccess.destination).to.be.equal(asyncConfig.destinationConfig.onSuccess.destination);
+      expect(response.data.lastModifiedTime).to.be.ok();
+      expect(response.data.createdTime).to.be.ok();
+    });
+
+    it('getFunctionAsyncConfig should be ok', async function () {
+      const response = await client.getFunctionAsyncConfig(serviceName, functionName, "");
+      expect(response.data).to.be.ok();
+      expect(response.data.maxAsyncEventAgeInSeconds).to.be.equal(asyncConfig.maxAsyncEventAgeInSeconds);
+    });
+
+    it('listFunctionAsyncConfig should ok', async function () {
+      const response = await client.listFunctionAsyncConfigs(serviceName, functionName, {
+        limit : 1,
+      });
+      expect(response.data).to.be.ok();
+      expect(response.data.configs).to.be.ok();
+      for (var i = 0; i < response.data.configs.length; i++) {
+        const elem = response.data.configs[i];
+        expect(elem.maxAsyncEventAgeInSeconds).to.be.equal(asyncConfig.maxAsyncEventAgeInSeconds);
+        expect(elem.maxAsyncRetryAttempts).to.be.equal(asyncConfig.maxAsyncRetryAttempts);
+      }
+    });
+
+    it('deleteFunctionAsyncConfig should be ok', async function () {
+      const response = await client.deleteFunctionAsyncConfig(serviceName, functionName, "");
+    });
+
+  });
 });
