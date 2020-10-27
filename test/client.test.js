@@ -12,8 +12,8 @@ const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
 const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
 const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
-const domainName = process.env.DOMAIN_NAME || '123.cn-shanghai.' + ACCOUNT_ID + '.cname-test.fc.aliyun-inc.com';
-
+const domainName = process.env.DOMAIN_NAME || 'nodejs-sdk.cn-shanghai.' + ACCOUNT_ID + '.functioncompute.com';
+const jaegerEndpoint = process.env.JAEGER_ENDPOINT || 'jaegerEndpoint';
 
 describe('client test', function () {
   it('static function getSignature', function () {
@@ -173,22 +173,43 @@ describe('client test', function () {
     });
 
     before(async function () {
-      // clean up
-      const response = await client.listServices();
-      for (var i = 0; i < response.data.services.length; i++) {
-        const service = response.data.services[i];
-        // Only delete test service
-        if (service.serviceName === serviceName) {
-          const res = await client.listFunctions(service.serviceName);
-          // clean up functions
-          for (var j = 0; j < res.data.functions.length; j++) {
-            const fun = res.data.functions[j];
-            await client.deleteFunction(service.serviceName, fun.functionName);
-          }
-          await client.deleteService(service.serviceName);
-          await client.deleteFunction('fc-nodejs-sdk-unit-test', 'testProvisionConfig');
-          await client.deleteService('fc-nodejs-sdk-unit-test');
+      try {
+        // clean up
+        var listServiceOptions = {
+          'prefix': serviceName
         }
+        const response = await client.listServices(listServiceOptions);
+        for (var i = 0; i < response.data.services.length; i++) {
+          const service = response.data.services[i];
+          // Only delete test service
+          if (service.serviceName === serviceName) {
+            const res = await client.listFunctions(service.serviceName);
+            // clean up functions
+            for (var j = 0; j < res.data.functions.length; j++) {
+              const fun = res.data.functions[j];
+              await client.deleteFunction(service.serviceName, fun.functionName);
+            }
+            await client.deleteService(service.serviceName);
+            await client.deleteFunction('fc-nodejs-sdk-unit-test', 'testProvisionConfig');
+            await client.deleteService('fc-nodejs-sdk-unit-test');
+          }
+        }
+      } catch (ex) {
+        //ignore
+      }
+    });
+
+    after(async function () {
+      // clean up
+      try {
+        const res = await client.listFunctions(serviceName);
+        for (var j = 0; j < res.data.functions.length; j++) {
+          const fun = res.data.functions[j];
+          await client.deleteFunction(serviceName, fun.functionName);
+        }
+        await client.deleteService(serviceName);
+      } catch (ex) {
+        // ignore
       }
     });
 
@@ -231,6 +252,62 @@ describe('client test', function () {
     it('deleteService should ok', async function () {
       await client.deleteService(serviceName);
       // no exception = ok
+    });
+
+    it('createService with tracingConfig should be ok', async function () {
+      var options = {
+        'tracingConfig': {
+          'type': 'Jaeger',
+          'params': {
+            'endpoint': jaegerEndpoint
+          }
+        }
+      };
+      var service = await client.createService(serviceName, options);
+      expect(service.data).to.be.ok();
+
+      expect(service.data).to.have.property('serviceName', serviceName);
+      expect(service.data.tracingConfig).to.have.property('type', 'Jaeger');
+      expect(service.data.tracingConfig.params).to.have.property('endpoint', jaegerEndpoint);
+    });
+
+    it('invokeFunction with injected span context should pass traceID to context', async function () {
+      var functionName = 'echo-tracing-context';
+      var func = await client.createFunction(serviceName, {
+        functionName: functionName,
+        description: 'function desc',
+        memorySize: 128,
+        handler: 'main.test_tracing',
+        runtime: 'nodejs6',
+        timeout: 10,
+        code: {
+          zipFile: fs.readFileSync(path.join(__dirname, 'figures/test.zip'), 'base64')
+        }
+      });
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', functionName);
+
+      var headers = {
+        'x-fc-tracing-opentracing-span-context': '124ed43254b54966:124ed43254b54966:0:1',
+        'x-fc-tracing-opentracing-span-context-baggage-key': 'val'
+      };
+      var resp = await client.invokeFunction(serviceName, functionName, 'event', headers = headers);
+      var out = JSON.parse(resp.data);
+      expect(out.openTracingSpanContext).to.contain('124ed43254b54966');
+      expect(out.openTracingSpanBaggages).to.have.property('key', 'val');
+      client.deleteFunction(serviceName, functionName);
+    });
+
+    it('update tracingConfig to disable tracingConfig should be ok', async function () {
+      var options = {
+        'tracingConfig': {},
+      };
+      var service = await client.updateService(serviceName, options);
+      expect(service.data).to.be.ok();
+      expect(service.data).to.have.property('serviceName', serviceName);
+      expect(service.data.tracingConfig).to.have.property('type', null);
+      expect(service.data.tracingConfig).to.have.property('params', null);
+      client.deleteService(serviceName);
     });
   });
 
@@ -1130,7 +1207,7 @@ describe('client test', function () {
     });
     const functionName = "asyncTest"
     const asyncConfig = {
-      destinationConfig : {
+      destinationConfig: {
         onSuccess: {
           destination: `acs:mns:cn-shanghai:${ACCOUNT_ID}:/queues/sth/messages`
         }
@@ -1163,7 +1240,7 @@ describe('client test', function () {
 
     it('listFunctionAsyncConfig should ok', async function () {
       const response = await client.listFunctionAsyncConfigs(serviceName, functionName, {
-        limit : 1,
+        limit: 1,
       });
       expect(response.data).to.be.ok();
       expect(response.data.configs).to.be.ok();
