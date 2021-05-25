@@ -23,6 +23,15 @@ exports.test_buf_unhandled_err = function (event, context, callback) {
   callback(new Buffer('This is an unhandled error'), event);
 };
 
+exports.test_tracing = function (event, context, callback) {
+  var params = {
+    openTracingSpanContext: context.tracing.openTracingSpanContext,
+    openTracingSpanBaggages: context.tracing.openTracingSpanBaggages,
+    jaegerEndpoint: context.tracing.jaegerEndpoint
+  };
+  callback(null, params);
+};
+
 exports.http_handler = function (request, response, context) {
   getRawBody(request, function (err, body) {
     console.log('request: url:%s, path:%s, method:%s, clientIP:%s, body:%s',
