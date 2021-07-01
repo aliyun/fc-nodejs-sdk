@@ -853,7 +853,7 @@ var Client = function () {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-      return this.get(`/services/${serviceName}/versions`, null, headers, options);
+      return this.get(`/services/${serviceName}/versions`, options, headers);
     }
 
     /**
@@ -938,7 +938,7 @@ var Client = function () {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-      return this.get(`/services/${serviceName}/aliases`, null, headers, options);
+      return this.get(`/services/${serviceName}/aliases`, options, headers);
     }
 
     /**
