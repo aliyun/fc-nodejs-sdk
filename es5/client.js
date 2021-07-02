@@ -1127,6 +1127,83 @@ var Client = function () {
       return this.put(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/provision-config`, options, headers);
     }
 
+     /**
+       * 获取账号下的按量资源列表
+       *
+       * Options:
+       * - limit
+       * - nextToken
+       * - serviceName
+       * - qualifier
+       *
+       * @param {Object} options 选项，optional
+       * @return {Promise} 返回 Object(包含 headers 和 data 属性[onDemandConfigs 列表])
+       */
+
+  }, {
+    key: 'listOnDemandConfigs',
+    value: function listOnDemandConfigs() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments[1];
+
+      return this.get('/on-demand-configs', options, headers);
+    }
+
+    /**
+     * 获取单个函数的按量资源配置
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[onDemandConfig 信息])
+     */
+
+  }, {
+    key: 'getOnDemandConfig',
+    value: function getOnDemandConfig(serviceName, functionName, qualifier) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, null, headers);
+    }
+
+    /**
+     * 更新单个函数的按量资源配置
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[onDemandConfig 信息])
+     */
+
+  }, {
+    key: 'putOnDemandConfig',
+    value: function putOnDemandConfig(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.put(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, options, headers);
+    }
+
+    /**
+     * 删除单个函数的按量资源配置
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {Object} headers
+     * @param {String} qualifier
+     * @return {Promise} 返回 Object(包含headers和data属性)
+     */
+
+  }, {
+    key: 'deleteOnDemandConfig',
+    value: function deleteOnDemandConfig(serviceName, functionName, qualifier) {
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.delete(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, null, headers);
+    }
+
     /**
      * 删除单个函数的 asyncConfig
      *
