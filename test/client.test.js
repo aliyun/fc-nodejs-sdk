@@ -10,7 +10,7 @@ const FunctionComputeClient = require('../');
 const ACCOUNT_ID = process.env.ACCOUNT_ID || 'accountid';
 const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID || 'accessKeyID';
 const ACCESS_KEY_SECRET = process.env.ACCESS_KEY_SECRET || 'accessKeySecret';
-const REGION = process.env.REGION || "cn-shanghai";
+const REGION = process.env.REGION || 'cn-shanghai';
 const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
 const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
 const domainName = process.env.DOMAIN_NAME || `sdk.${ACCOUNT_ID}.${REGION}.functioncompute.com`;
@@ -646,16 +646,18 @@ describe('client test', function () {
 
   async function cleanupResources(client, serviceName, functionName, triggerName) {
     try {
-      await client.deleteTrigger(serviceName, functionName, triggerName);
+      if (triggerName !== undefined) {
+        await client.deleteTrigger(serviceName, functionName, triggerName);
+      }
     } catch (ex) {
       // Ignore
-      console.log(ex.stack);
+      // console.log(ex.stack);
     }
     try {
       await client.deleteFunction(serviceName, functionName);
     } catch (ex) {
       // Ignore
-      console.log(ex.stack);
+      // console.log(ex.stack);
     }
     await client.deleteService(serviceName);
     // no exception = ok
@@ -776,8 +778,8 @@ describe('client test', function () {
   });
 
   describe('oss trigger should be ok', function () {
-    const functionName = 'hello-world';
-    const triggerName = 'image_resize';
+    const functionName = 'hello-oss';
+    const triggerName = 'oss_t';
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
       accessKeySecret: ACCESS_KEY_SECRET,
@@ -907,7 +909,6 @@ describe('client test', function () {
     const functionName = 'hello-world';
     const aliasName = 'new-version';
 
-
     before(async function () {
       await createServiceAndFunction(client, serviceName, functionName, 'main.handler');
       await client.publishVersion(serviceName, 'test version 1');
@@ -934,17 +935,11 @@ describe('client test', function () {
     it('create alias', async function () {
       const res = await client.createAlias(serviceName, aliasName, '1', {
         'description': 'test alias',
-        'additionalVersionWeight': {
-          '1': 1
-        }
       });
 
       expect(res.data.aliasName).to.be(aliasName);
       expect(res.data.versionId).to.be('1');
       expect(res.data.description).to.be('test alias');
-      expect(res.data.additionalVersionWeight).to.eql({
-        '1': 1
-      });
     });
 
     it('update alias', async function () {
@@ -961,14 +956,14 @@ describe('client test', function () {
         '2': 0.3
       });
 
-      res = await client.updateAlias(serviceName, aliasName, '2', {
+      res = await client.updateAlias(serviceName, aliasName, '1', {
         'additionalVersionWeight': {
           '2': 0.5
         }
       });
 
       expect(res.data.aliasName).to.be(aliasName);
-      expect(res.data.versionId).to.be('2');
+      expect(res.data.versionId).to.be('1');
       expect(res.data.description).to.be('');
       expect(res.data.additionalVersionWeight).to.eql({
         '2': 0.5
@@ -979,7 +974,7 @@ describe('client test', function () {
       const res = await client.getAlias(serviceName, aliasName);
 
       expect(res.data.aliasName).to.be(aliasName);
-      expect(res.data.versionId).to.be('2');
+      expect(res.data.versionId).to.be('1');
       expect(res.data.description).to.be('');
       expect(res.data.additionalVersionWeight).to.eql({
         '2': 0.5
@@ -990,7 +985,7 @@ describe('client test', function () {
       const res = await client.listAliases(serviceName);
 
       expect(res.data.aliases).to.length(1);
-      expect(res.data.aliases[0].versionId).to.be('2');
+      expect(res.data.aliases[0].versionId).to.be('1');
       expect(res.data.aliases[0].description).to.be('');
       expect(res.data.aliases[0].additionalVersionWeight).to.eql({
         '2': 0.5
@@ -1092,7 +1087,7 @@ describe('client test', function () {
 
       lresp = await client.listServices({
         tags: {
-          k3: 'v3'
+          k_no_exist: 'v3_no_exist'
         }
       });
 
@@ -1154,9 +1149,7 @@ describe('client test', function () {
       await client.publishVersion(serviceName, 'test version 1');
       await client.createAlias(serviceName, aliasName, '1', {
         'description': 'test alias',
-        'additionalVersionWeight': {
-          '1': 1
-        }
+        'additionalVersionWeight': {}
       });
     });
 
@@ -1164,8 +1157,8 @@ describe('client test', function () {
       await client.putProvisionConfig(serviceName, functionName, aliasName, {
         target: 0,
       });
-      await client.deleteVersion(serviceName, '1');
       await client.deleteAlias(serviceName, aliasName);
+      await client.deleteVersion(serviceName, '1');
       await cleanupResources(client, serviceName, functionName);
     });
 
