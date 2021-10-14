@@ -20,7 +20,7 @@ exports.test_buf_handled_err = function (event, context, callback) {
 // test unhandled err with bad spelling
 exports.test_buf_unhandled_err = function (event, context, callback) {
   console.log('event: %s', event.toSting());
-  callback(new Buffer('This is an unhandled error'), event);
+  callback(Buffer.from('This is an unhandled error'), event);
 };
 
 exports.test_tracing = function (event, context, callback) {
@@ -57,6 +57,6 @@ exports.http_handler = function (request, response, context) {
 
 module.exports.http_function_err_handler = function (request, response, context) {
   console.log(context.toSting());
-  response.send(new Buffer('hello world'));
+  response.send(Buffer.from('hello world'));
 
 };
