@@ -1216,6 +1216,151 @@ var Client = function () {
     }
 
     /**
+     * 获取账号信息，一般获取支持可用区
+     */
+
+  }, {
+    key: 'getAccountSettings',
+    value: function getAccountSettings() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      return this.get('/account-settings', options, headers);
+    }
+
+    /**
+     * 获取当前 region 的 layer 列表
+     */
+
+  }, {
+    key: 'listLayers',
+    value: function listLayers() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      return this.get('/layers', options, headers);
+    }
+
+    /**
+     * 获取 layer 的版本信息列表
+     */
+
+  }, {
+    key: 'listLayerVersions',
+    value: function listLayerVersions(layerName) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.get(`/layers/${layerName}/versions`, options, headers);
+    }
+
+    /**
+     * 获取 layer 指定版本的信息
+     */
+
+  }, {
+    key: 'getLayerVersion',
+    value: function getLayerVersion(layerName, version) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.get(`/layers/${layerName}/versions/${version}`, options, headers);
+    }
+
+    /**
+     * 发布 layer 的版本
+     */
+
+  }, {
+    key: 'publishLayerVersion',
+    value: function publishLayerVersion(layerName) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.post(`/layers/${layerName}/versions`, options, headers);
+    }
+
+    /**
+     * 获取账号下的按量资源列表
+     *
+     * Options:
+     * - limit
+     * - nextToken
+     *
+     * @param {Object} options 选项，optional
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[onDemandConfigs 列表])
+     */
+
+  }, {
+    key: 'listOnDemandConfigs',
+    value: function listOnDemandConfigs() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var headers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      return this.get('/on-demand-configs', options, headers);
+    }
+
+    /**
+     * 获取单个函数的按量资源配置
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} qualifier
+     * @param {Object} options
+     * @param {Object} headers
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[onDemandConfig 信息])
+     */
+
+  }, {
+    key: 'getOnDemandConfig',
+    value: function getOnDemandConfig(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, options, headers);
+    }
+
+    /**
+     * 更新单个函数的按量资源配置
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} qualifier
+     * @param {Object} options
+     * @param {Object} headers
+     * @return {Promise} 返回 Object(包含 headers 和 data 属性[onDemandConfig 信息])
+     */
+
+  }, {
+    key: 'putOnDemandConfig',
+    value: function putOnDemandConfig(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.put(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, options, headers);
+    }
+
+    /**
+     * 删除单个函数的按量资源配置
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} qualifier
+     * @param {Object} options
+     * @param {Object} headers
+     * @return {Promise} 
+     */
+
+  }, {
+    key: 'deleteOnDemandConfig',
+    value: function deleteOnDemandConfig(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.delete(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, options, headers);
+    }
+
+    /**
      * 获得Header 签名
      *
      * @param {String} accessKeyID
