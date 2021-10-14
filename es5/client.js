@@ -23,7 +23,7 @@ var helper = require('./helper');
 
 function signString(source, secret) {
   var buff = crypto.createHmac('sha256', secret).update(source, 'utf8').digest();
-  return new Buffer(buff, 'binary').toString('base64');
+  return Buffer.from(buff, 'binary').toString('base64');
 }
 
 function getServiceName(serviceName, qualifier) {
@@ -132,19 +132,19 @@ var Client = function () {
                     buff = body;
                     headers['content-type'] = 'application/octet-stream';
                   } else if (typeof body === 'string') {
-                    buff = new Buffer(body, 'utf8');
+                    buff = Buffer.from(body, 'utf8');
                     headers['content-type'] = 'application/octet-stream';
                   } else if ('function' === typeof body.pipe) {
                     buff = body;
                     headers['content-type'] = 'application/octet-stream';
                   } else {
-                    buff = new Buffer(JSON.stringify(body), 'utf8');
+                    buff = Buffer.from(JSON.stringify(body), 'utf8');
                     headers['content-type'] = 'application/json';
                   }
 
                   if ('function' !== typeof body.pipe) {
                     digest = kitx.md5(buff, 'hex');
-                    md5 = new Buffer(digest, 'utf8').toString('base64');
+                    md5 = Buffer.from(digest, 'utf8').toString('base64');
 
 
                     headers['content-length'] = buff.length;
