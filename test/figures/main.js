@@ -45,7 +45,7 @@ exports.http_handler = function (request, response, context) {
       method: request.method,
     };
     for (var key in request.queries) {
-      if (request.queries.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(request.queries, key)) {
         var value = request.queries[key];
         response.setHeader(key, value);
       }
