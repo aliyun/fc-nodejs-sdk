@@ -271,7 +271,7 @@ describe('client test', function () {
       expect(service.data).to.have.property('serviceName', serviceName);
       expect(service.data.tracingConfig).to.have.property('type', 'Jaeger');
       expect(service.data.tracingConfig.params).to.have.property('endpoint', jaegerEndpoint);
-  });
+    });
 
     it('invokeFunction with injected span context should pass traceID to context', async function () {
       var functionName = 'echo-tracing-context';
@@ -625,7 +625,7 @@ describe('client test', function () {
   async function createServiceAndFunction(client, serviceName, functionName, handlerName) {
     // clean up
     const service = await client.createService(serviceName, {    
-        role: `acs:ram::${ACCOUNT_ID}:role/aliyunfclogexecutionrole`,
+      role: `acs:ram::${ACCOUNT_ID}:role/aliyunfclogexecutionrole`,
     });
     expect(service.data).to.be.ok();
     expect(service.data).to.have.property('serviceName', serviceName);
@@ -1200,7 +1200,7 @@ describe('client test', function () {
       accessKeySecret: ACCESS_KEY_SECRET,
       region: REGION
     });
-    const functionName = "asyncTest"
+    const functionName = 'asyncTest';
     const asyncConfig = {
       destinationConfig : {
         onSuccess: {
@@ -1219,7 +1219,7 @@ describe('client test', function () {
     });
 
     it('putFunctionAsyncConfig should be ok', async function () {
-      const response = await client.putFunctionAsyncConfig(serviceName, functionName, "", asyncConfig);
+      const response = await client.putFunctionAsyncConfig(serviceName, functionName, '', asyncConfig);
       console.log(response.data);
       expect(response.data).to.be.ok();
       expect(response.data.destinationConfig.onSuccess.destination).to.be.equal(asyncConfig.destinationConfig.onSuccess.destination);
@@ -1228,7 +1228,7 @@ describe('client test', function () {
     });
 
     it('getFunctionAsyncConfig should be ok', async function () {
-      const response = await client.getFunctionAsyncConfig(serviceName, functionName, "");
+      const response = await client.getFunctionAsyncConfig(serviceName, functionName, '');
       expect(response.data).to.be.ok();
       expect(response.data.maxAsyncEventAgeInSeconds).to.be.equal(asyncConfig.maxAsyncEventAgeInSeconds);
     });
@@ -1247,7 +1247,7 @@ describe('client test', function () {
     });
 
     it('deleteFunctionAsyncConfig should be ok', async function () {
-      await client.deleteFunctionAsyncConfig(serviceName, functionName, "");
+      await client.deleteFunctionAsyncConfig(serviceName, functionName, '');
     });
 
   });

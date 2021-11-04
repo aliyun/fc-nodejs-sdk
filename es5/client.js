@@ -205,25 +205,13 @@ var Client = function () {
 
                 contentType = response.headers['content-type'] || '';
 
-                if (!contentType.startsWith('application/json')) {
-                  _context.next = 33;
-                  break;
+                if (contentType.startsWith('application/json')) {
+                  // TODO: Need to add additional messages when an error is thrown
+                  responseBody = JSON.parse(responseBody);
                 }
 
-                _context.prev = 26;
-
-                responseBody = JSON.parse(responseBody);
-                _context.next = 33;
-                break;
-
-              case 30:
-                _context.prev = 30;
-                _context.t0 = _context['catch'](26);
-                throw _context.t0;
-
-              case 33:
                 if (!(response.statusCode < 200 || response.statusCode >= 300)) {
-                  _context.next = 41;
+                  _context.next = 34;
                   break;
                 }
 
@@ -241,18 +229,18 @@ var Client = function () {
                 err.code = responseBody.ErrorCode;
                 throw err;
 
-              case 41:
+              case 34:
                 return _context.abrupt('return', {
                   'headers': response.headers,
                   'data': responseBody
                 });
 
-              case 42:
+              case 35:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, this, [[26, 30]]);
+        }, _callee, this);
       }));
 
       function request(_x3, _x4, _x5, _x6) {
@@ -370,7 +358,7 @@ var Client = function () {
 
       if (options.tags !== undefined) {
         for (var k in options.tags) {
-          if (options.tags.hasOwnProperty(k)) {
+          if (Object.prototype.hasOwnProperty.call(options.tags, k)) {
             options[`tag_${k}`] = options.tags[k];
           }
         }
