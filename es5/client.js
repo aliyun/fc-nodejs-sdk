@@ -370,7 +370,7 @@ var Client = function () {
 
       if (options.tags !== undefined) {
         for (var k in options.tags) {
-          if (options.tags.hasOwnProperty(k)) {
+          if (Object.prototype.hasOwnProperty.call(options.tags, k)) {
             options[`tag_${k}`] = options.tags[k];
           }
         }
