@@ -20,6 +20,7 @@ var kitx = require('kitx');
 var debug = require('debug')('lambda');
 var pkg = require('../package.json');
 var helper = require('./helper');
+var WebSocket = require('ws');
 
 function signString(source, secret) {
   var buff = crypto.createHmac('sha256', secret).update(source, 'utf8').digest();
@@ -93,9 +94,9 @@ var Client = function () {
     value: function buildHeaders() {
       var now = new Date();
       var headers = {
-        'accept': 'application/json',
-        'date': now.toUTCString(),
-        'host': this.host,
+        accept: 'application/json',
+        date: now.toUTCString(),
+        host: this.host,
         'user-agent': `Node.js(${process.version}) OS(${process.platform}/${process.arch}) SDK(${pkg.name}@v${pkg.version})`,
         'x-fc-account-id': this.accountid
       };
@@ -231,8 +232,8 @@ var Client = function () {
 
               case 34:
                 return _context.abrupt('return', {
-                  'headers': response.headers,
-                  'data': responseBody
+                  headers: response.headers,
+                  data: responseBody
                 });
 
               case 35:
@@ -311,6 +312,41 @@ var Client = function () {
     key: 'delete',
     value: function _delete(path, query, headers) {
       return this.request('DELETE', path, query, null, headers);
+    }
+
+    /*!
+     * WebSocket 请求
+     *
+     * @param {String} path 请求路径
+     * @param {Object} query 请求中的 query 部分
+     * @param {Object} headers 请求中的自定义 headers 部分
+     * @return {Promise} 返回 WebSocket
+     */
+
+  }, {
+    key: 'websocket',
+    value: function websocket(path, query) {
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      // endpoint
+      var url = `${this.endpoint.replace(/^http/, 'ws')}/${this.version}${path}`;
+
+      // query
+      if (query && Object.keys(query).length > 0) {
+        url = `${url}?${querystring.stringify(query)}`;
+      }
+
+      // headers
+      headers = Object.assign(this.buildHeaders(), this.headers, headers);
+
+      var queriesToSign = null;
+      if (path.startsWith('/proxy/')) {
+        queriesToSign = query || {};
+      }
+      var signature = Client.getSignature(this.accessKeyID, this.accessKeySecret, 'GET', `/${this.version}${path}`, headers, queriesToSign);
+      headers['authorization'] = signature;
+
+      return new WebSocket(url, { headers });
     }
 
     /**
@@ -1336,7 +1372,7 @@ var Client = function () {
      * @param {String} qualifier
      * @param {Object} options
      * @param {Object} headers
-     * @return {Promise} 
+     * @return {Promise}
      */
 
   }, {
@@ -1347,6 +1383,208 @@ var Client = function () {
 
       return this.delete(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/on-demand-config`, options, headers);
     }
+
+    /**
+     * 获取实例信息
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} qualifier
+     * @param {Object} options
+     * @param {Object} headers
+     * @return {Promise} 返回 Object(包含headers和data属性[Instance信息])
+     */
+
+  }, {
+    key: 'listInstances',
+    value: function listInstances(serviceName, functionName, qualifier) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+      return this.get(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/instances`, options, headers);
+    }
+    /**
+     * 登陆函数实例
+     *
+     * @param {String} serviceName
+     * @param {String} functionName
+     * @param {String} qualifier
+     * @param {String} instanceId
+     * @param {Object} options
+     * @param {Object} hooks
+     * @return {Promise} 返回 WebSocket 对象
+     */
+
+  }, {
+    key: 'instanceExec',
+    value: function () {
+      var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee3(serviceName, functionName) {
+        var qualifier = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+        var instanceId = arguments[3];
+
+        var _this = this;
+
+        var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+        var hooks = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+
+        var messageStdin, messageStdout, messageStderr, queries, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, key, _hooks$onClose, onClose, _hooks$onError, onError, _hooks$onStdout, onStdout, _hooks$onStderr, onStderr, ws, ticker;
+
+        return _regenerator2.default.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                messageStdin = 0;
+                messageStdout = 1;
+                messageStderr = 2;
+                queries = {
+                  command: '/bin/bash',
+                  tty: true,
+                  stdin: true,
+                  stdout: true,
+                  stderr: false,
+                  idleTimeout: 120
+                };
+                _iteratorNormalCompletion = true;
+                _didIteratorError = false;
+                _iteratorError = undefined;
+                _context3.prev = 7;
+
+                for (_iterator = Object.keys(queries)[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                  key = _step.value;
+
+                  if (typeof options[key] !== 'undefined') {
+                    queries[key] = options[key];
+                  }
+                }
+
+                _context3.next = 15;
+                break;
+
+              case 11:
+                _context3.prev = 11;
+                _context3.t0 = _context3['catch'](7);
+                _didIteratorError = true;
+                _iteratorError = _context3.t0;
+
+              case 15:
+                _context3.prev = 15;
+                _context3.prev = 16;
+
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                  _iterator.return();
+                }
+
+              case 18:
+                _context3.prev = 18;
+
+                if (!_didIteratorError) {
+                  _context3.next = 21;
+                  break;
+                }
+
+                throw _iteratorError;
+
+              case 21:
+                return _context3.finish(18);
+
+              case 22:
+                return _context3.finish(15);
+
+              case 23:
+                _hooks$onClose = hooks.onClose, onClose = _hooks$onClose === undefined ? function () {} : _hooks$onClose, _hooks$onError = hooks.onError, onError = _hooks$onError === undefined ? function () {} : _hooks$onError, _hooks$onStdout = hooks.onStdout, onStdout = _hooks$onStdout === undefined ? function () {} : _hooks$onStdout, _hooks$onStderr = hooks.onStderr, onStderr = _hooks$onStderr === undefined ? function () {} : _hooks$onStderr;
+                ws = this.websocket(`/services/${getServiceName(serviceName, qualifier)}/functions/${functionName}/instances/${instanceId}/exec`, queries);
+                ticker = setInterval(function () {
+                  try {
+                    ws.ping();
+                  } catch (e) {
+                    ws.close();
+                  }
+                }, 5000);
+
+
+                ws.on('unexpected-response', function (req, incoming) {
+                  var data = [];
+                  incoming.on('data', function (chunk) {
+                    data = data.concat(chunk);
+                  });
+                  incoming.on('end', function () {
+                    var msg = JSON.parse(data.toString());
+                    var err = new Error(msg.ErrorMessage);
+                    onError(err);
+                    ws.close();
+                  });
+                });
+                ws.on('close', function (err) {
+                  clearInterval(ticker);
+                  onClose(err);
+                });
+                ws.on('error', function (code, reason) {
+                  return onError(code, reason);
+                });
+                ws.on('ping', function (data) {
+                  return ws.pong(data);
+                });
+                ws.on('message', function (message) {
+                  if (!!message && message.length >= 2) {
+                    var messageType = message[0];
+                    var data = message.slice(1);
+                    if (messageType === messageStdout && onStdout) {
+                      onStdout(data);
+                    } else if (messageType === messageStderr && onStderr) {
+                      onStderr(data);
+                    }
+                  }
+                });
+
+                _context3.next = 33;
+                return _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee2() {
+                  return _regenerator2.default.wrap(function _callee2$(_context2) {
+                    while (1) {
+                      switch (_context2.prev = _context2.next) {
+                        case 0:
+                          new Promise(function (resolve) {
+                            return ws.onopen = resolve;
+                          });
+
+                        case 1:
+                        case 'end':
+                          return _context2.stop();
+                      }
+                    }
+                  }, _callee2, _this);
+                }));
+
+              case 33:
+                return _context3.abrupt('return', {
+                  websocket: ws,
+                  close: function close() {
+                    return ws.close();
+                  },
+                  sendMessage: function sendMessage(data) {
+                    if (!(data instanceof Uint8Array)) {
+                      throw new Error('data must be Uint8Array');
+                    }
+                    var messageArray = new Uint8Array(data.length + 1);
+                    messageArray.set([messageStdin]);
+                    messageArray.set(data, 1);
+                    ws.send(messageArray);
+                  }
+                });
+
+              case 34:
+              case 'end':
+                return _context3.stop();
+            }
+          }
+        }, _callee3, this, [[7, 11, 15, 23], [16,, 18, 22]]);
+      }));
+
+      function instanceExec(_x81, _x82) {
+        return _ref2.apply(this, arguments);
+      }
+
+      return instanceExec;
+    }()
 
     /**
      * 获得Header 签名
