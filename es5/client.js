@@ -1305,6 +1305,19 @@ var Client = function () {
     }
 
     /**
+     * 删除 layer 的版本
+     */
+
+  }, {
+    key: 'deleteLayerVersion',
+    value: function deleteLayerVersion(layerName, version) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      return this.delete(`/layers/${layerName}/versions/${version}`, options, headers);
+    }
+
+    /**
      * 获取账号下的按量资源列表
      *
      * Options:
