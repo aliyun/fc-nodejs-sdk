@@ -1311,10 +1311,9 @@ var Client = function () {
   }, {
     key: 'deleteLayerVersion',
     value: function deleteLayerVersion(layerName, version) {
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var headers = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-      return this.delete(`/layers/${layerName}/versions/${version}`, options, headers);
+      return this.delete(`/layers/${layerName}/versions/${version}`, null, headers);
     }
 
     /**
@@ -1592,7 +1591,7 @@ var Client = function () {
         }, _callee3, this, [[7, 11, 15, 23], [16,, 18, 22]]);
       }));
 
-      function instanceExec(_x81, _x82) {
+      function instanceExec(_x82, _x83) {
         return _ref2.apply(this, arguments);
       }
 
