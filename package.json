@@ -3,6 +3,7 @@
   "version": "2.5.0",
   "description": "Aliyun Function Compute API SDK2",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "make test",
     "build-es5": "babel lib/ -d es5/"
