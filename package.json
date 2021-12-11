@@ -36,8 +36,10 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "lib",
-    "es5"
+    "es5",
+    "types"
   ],
   "directories": {
     "doc": "doc",
