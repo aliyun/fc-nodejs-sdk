@@ -14,6 +14,8 @@
   "author": "Jackson Tian",
   "license": "MIT",
   "dependencies": {
+    "ali-oss": "^6.16.0",
+    "axios": "^0.24.0",
     "babel-runtime": "^6.23.0",
     "debug": "^2.6.4",
     "httpx": "^2.1.1",
