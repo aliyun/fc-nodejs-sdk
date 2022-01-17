@@ -315,6 +315,7 @@ describe('client test', function () {
 
   describe('function should ok', function () {
     const functionName = 'hello-world';
+    const functionWithoutLimitName = 'func-without-code-size-limit';
     const initFunctionName = 'counter';
     const functionWithBufResp = 'test-buf-resp';
     const functionWithHandledErr = 'test-func-with-handled-err';
@@ -366,6 +367,23 @@ describe('client test', function () {
       expect(func.data).to.have.property('functionName', functionName);
     });
 
+    it('createFunction without code size limit should ok', async function () {
+      const func = await client.createFunction(serviceName, {
+        functionName: functionWithoutLimitName,
+        description: 'function desc',
+        memorySize: 128,
+        handler: 'main.handler',
+        runtime: 'nodejs4.4',
+        timeout: 10,
+        withoutCodeLimit: true,
+        code: {
+          zipFile: path.join(__dirname, 'figures/test.zip')
+        }
+      });
+      expect(func.data).to.be.ok();
+      expect(func.data).to.have.property('functionName', functionWithoutLimitName);
+    });
+
     it('createFunction with initializer should ok', async function () {
       const func = await client.createFunction(serviceName, {
         functionName: initFunctionName,
@@ -388,18 +406,20 @@ describe('client test', function () {
       var response = await client.listFunctions(serviceName);
       expect(response.data).to.be.ok();
       expect(response.data.functions).to.be.ok();
-      expect(response.data.functions).to.have.length(2);
+      expect(response.data.functions).to.have.length(3);
       var func = response.data.functions;
       expect(func[0]).to.have.property('functionName', initFunctionName);
-      expect(func[1]).to.have.property('functionName', functionName);
+      expect(func[1]).to.have.property('functionName', functionWithoutLimitName);
+      expect(func[2]).to.have.property('functionName', functionName);
 
       response = await client.listFunctions(serviceName, {}, {}, 'LATEST');
       expect(response.data).to.be.ok();
       expect(response.data.functions).to.be.ok();
-      expect(response.data.functions).to.have.length(2);
+      expect(response.data.functions).to.have.length(3);
       func = response.data.functions;
       expect(func[0]).to.have.property('functionName', initFunctionName);
-      expect(func[1]).to.have.property('functionName', functionName);
+      expect(func[1]).to.have.property('functionName', functionWithoutLimitName);
+      expect(func[2]).to.have.property('functionName', functionName);
     });
 
     it('getFunction should ok', async function () {
@@ -434,6 +454,19 @@ describe('client test', function () {
       expect(initFunc.data).to.have.property('description', 'updated function desc');
       expect(initFunc.data).to.have.property('initializationTimeout', 20);
       expect(initFunc.data).to.have.property('initializer', 'counter.initializer');
+    });
+
+    it('updateFunction without code size limit should ok', async function () {
+      const func = await client.updateFunction(serviceName, functionWithoutLimitName, {
+        functionName: functionWithoutLimitName,
+        description: 'updated function desc',
+        withoutCodeLimit: true,
+        code: {
+          zipFile: path.join(__dirname, 'figures/test.zip')
+        }
+      });
+      expect(func.data).to.have.property('functionName', functionWithoutLimitName);
+      expect(func.data).to.have.property('description', 'updated function desc');
     });
 
     it('invokeFunction should ok', async function () {
@@ -618,6 +651,7 @@ describe('client test', function () {
     it('deleteFunction should ok', async function () {
       await client.deleteFunction(serviceName, functionName);
       await client.deleteFunction(serviceName, initFunctionName);
+      await client.deleteFunction(serviceName, functionWithoutLimitName);
       // No exception, no failed
     });
   });

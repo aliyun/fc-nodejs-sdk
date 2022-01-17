@@ -14,6 +14,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var querystring = require('querystring');
 var crypto = require('crypto');
+var axios = require('axios');
+var OSS = require('ali-oss');
+var path = require('path');
+var fs = require('fs');
 
 var httpx = require('httpx');
 var kitx = require('kitx');
@@ -481,8 +485,144 @@ var Client = function () {
   }, {
     key: 'createFunction',
     value: function createFunction(serviceName, options, headers) {
-      this.normalizeParams(options);
-      return this.post(`/services/${serviceName}/functions`, options, headers);
+      var _this = this;
+
+      if (options.withoutCodeLimit === undefined || options.withoutCodeLimit === false) {
+        delete options.withoutCodeLimit;
+        this.normalizeParams(options);
+        return this.post(`/services/${serviceName}/functions`, options, headers);
+      }
+      var getTmpOssTokenOptions = {
+        functionName: String(options.functionName),
+        instanceType: options.instanceType
+      };
+      delete options.withoutCodeLimit;
+      return this.get(`/services/${serviceName}/tempCodeBucketToken`, getTmpOssTokenOptions, headers).then(function (resp) {
+        return _this.uploadCodeToTmpOssBucket(_this, resp, serviceName, options);
+      }).then(function (resp) {
+        return _this.largeFunctionHelper(_this, resp, serviceName, options, headers, true);
+      });
+    }
+
+    /**
+     * 获取访问 oss 的 token
+     *
+     * @param {String} serviceName 服务名
+     * @param {String} functionName 函数名
+     * @param {String} instanceType 实例类型类型, 与 createFunction 一致
+     * @return {Promise} 返回 oss token 信息
+     */
+
+  }, {
+    key: 'getTempCodeBucketPermission',
+    value: function getTempCodeBucketPermission(serviceName, functionName, instanceType, headers) {
+      var getTmpOssTokenOptions = {
+        functionName: functionName,
+        instanceType: instanceType
+      };
+      return this.post(`/inner/services/${serviceName}/functions/grantTempCodeBucketPermission`, getTmpOssTokenOptions, headers);
+    }
+  }, {
+    key: 'largeFunctionHelper',
+    value: function largeFunctionHelper(that, resp, serviceName, options, headers, isCreate, functionName) {
+      that.normalizeParams(options);
+      options.code = {
+        ossBucketName: resp.data.ossBucket,
+        ossObjectName: `${that.accountid}/${serviceName}/${resp.data.objectName}`
+      };
+
+      if (isCreate === true) {
+        return that.post(`/services/${serviceName}/functions`, options, headers);
+      }
+      return that.put(`/services/${serviceName}/functions/${functionName}`, options, headers);
+    }
+  }, {
+    key: 'uploadCodeToTmpOssBucket',
+    value: function uploadCodeToTmpOssBucket(that, resp, serviceName, options) {
+      var _this2 = this;
+
+      var put = function () {
+        var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee3() {
+          return _regenerator2.default.wrap(function _callee3$(_context3) {
+            while (1) {
+              switch (_context3.prev = _context3.next) {
+                case 0:
+                  _context3.prev = 0;
+                  _context3.next = 3;
+                  return client.put(`${that.accountid}/${serviceName}/${resp.data.objectName}`, path.normalize(options.code.zipFile));
+
+                case 3:
+                  _context3.next = 8;
+                  break;
+
+                case 5:
+                  _context3.prev = 5;
+                  _context3.t0 = _context3['catch'](0);
+
+                  console.log(_context3.t0);
+
+                case 8:
+                  return _context3.abrupt('return', resp);
+
+                case 9:
+                case 'end':
+                  return _context3.stop();
+              }
+            }
+          }, _callee3, this, [[0, 5]]);
+        }));
+
+        return function put() {
+          return _ref3.apply(this, arguments);
+        };
+      }();
+
+      // TODO: httpStatus 403
+      var fileSize = fs.statSync(options.code.zipFile).size;
+      if (fileSize > resp.data.codeSizeLimit) {
+        throw new Error(`the size of file ${fileSize} could not greater than ${resp.data.codeSizeLimit}`);
+      }
+      var client = new OSS({
+        region: resp.data.ossRegion,
+        accessKeyId: resp.data.credentials.AccessKeyId,
+        accessKeySecret: resp.data.credentials.AccessKeySecret,
+        stsToken: resp.data.credentials.SecurityToken,
+        bucket: resp.data.ossBucket,
+        refreshSTSToken: function () {
+          var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee2() {
+            var refreshToken;
+            return _regenerator2.default.wrap(function _callee2$(_context2) {
+              while (1) {
+                switch (_context2.prev = _context2.next) {
+                  case 0:
+                    _context2.next = 2;
+                    return axios.get('https://127.0.0.1/sts');
+
+                  case 2:
+                    refreshToken = _context2.sent;
+                    return _context2.abrupt('return', {
+                      accessKeyId: refreshToken.data.credentials.AccessKeyId,
+                      accessKeySecret: refreshToken.data.credentials.AccessKeySecret,
+                      stsToken: refreshToken.data.credentials.SecurityToken
+                    });
+
+                  case 4:
+                  case 'end':
+                    return _context2.stop();
+                }
+              }
+            }, _callee2, _this2);
+          }));
+
+          function refreshSTSToken() {
+            return _ref2.apply(this, arguments);
+          }
+
+          return refreshSTSToken;
+        }()
+      });
+
+      return put();
     }
   }, {
     key: 'normalizeParams',
@@ -592,9 +732,24 @@ var Client = function () {
   }, {
     key: 'updateFunction',
     value: function updateFunction(serviceName, functionName, options, headers) {
-      this.normalizeParams(options);
-      var path = `/services/${serviceName}/functions/${functionName}`;
-      return this.put(path, options, headers);
+      var _this3 = this;
+
+      if (options.withoutCodeLimit === undefined || options.withoutCodeLimit === false) {
+        delete options.withoutCodeLimit;
+        this.normalizeParams(options);
+        var _path = `/services/${serviceName}/functions/${functionName}`;
+        return this.put(_path, options, headers);
+      }
+      var getTmpOssTokenOptions = {
+        functionName: String(options.functionName),
+        instanceType: options.instanceType
+      };
+      delete options.withoutCodeLimit;
+      return this.get(`/services/${serviceName}/tempCodeBucketToken`, getTmpOssTokenOptions, headers).then(function (resp) {
+        return _this3.uploadCodeToTmpOssBucket(_this3, resp, serviceName, options);
+      }).then(function (resp) {
+        return _this3.largeFunctionHelper(_this3, resp, serviceName, options, headers, false, functionName);
+      });
     }
 
     /**
@@ -1430,20 +1585,20 @@ var Client = function () {
   }, {
     key: 'instanceExec',
     value: function () {
-      var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee3(serviceName, functionName) {
+      var _ref4 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee5(serviceName, functionName) {
         var qualifier = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
         var instanceId = arguments[3];
 
-        var _this = this;
+        var _this4 = this;
 
         var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
         var hooks = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
 
         var messageStdin, messageStdout, messageStderr, queries, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, key, _hooks$onClose, onClose, _hooks$onError, onError, _hooks$onStdout, onStdout, _hooks$onStderr, onStderr, ws, ticker;
 
-        return _regenerator2.default.wrap(function _callee3$(_context3) {
+        return _regenerator2.default.wrap(function _callee5$(_context5) {
           while (1) {
-            switch (_context3.prev = _context3.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
                 messageStdin = 0;
                 messageStdout = 1;
@@ -1459,7 +1614,7 @@ var Client = function () {
                 _iteratorNormalCompletion = true;
                 _didIteratorError = false;
                 _iteratorError = undefined;
-                _context3.prev = 7;
+                _context5.prev = 7;
 
                 for (_iterator = Object.keys(queries)[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                   key = _step.value;
@@ -1469,38 +1624,38 @@ var Client = function () {
                   }
                 }
 
-                _context3.next = 15;
+                _context5.next = 15;
                 break;
 
               case 11:
-                _context3.prev = 11;
-                _context3.t0 = _context3['catch'](7);
+                _context5.prev = 11;
+                _context5.t0 = _context5['catch'](7);
                 _didIteratorError = true;
-                _iteratorError = _context3.t0;
+                _iteratorError = _context5.t0;
 
               case 15:
-                _context3.prev = 15;
-                _context3.prev = 16;
+                _context5.prev = 15;
+                _context5.prev = 16;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
               case 18:
-                _context3.prev = 18;
+                _context5.prev = 18;
 
                 if (!_didIteratorError) {
-                  _context3.next = 21;
+                  _context5.next = 21;
                   break;
                 }
 
                 throw _iteratorError;
 
               case 21:
-                return _context3.finish(18);
+                return _context5.finish(18);
 
               case 22:
-                return _context3.finish(15);
+                return _context5.finish(15);
 
               case 23:
                 _hooks$onClose = hooks.onClose, onClose = _hooks$onClose === undefined ? function () {} : _hooks$onClose, _hooks$onError = hooks.onError, onError = _hooks$onError === undefined ? function () {} : _hooks$onError, _hooks$onStdout = hooks.onStdout, onStdout = _hooks$onStdout === undefined ? function () {} : _hooks$onStdout, _hooks$onStderr = hooks.onStderr, onStderr = _hooks$onStderr === undefined ? function () {} : _hooks$onStderr;
@@ -1548,11 +1703,11 @@ var Client = function () {
                   }
                 });
 
-                _context3.next = 33;
-                return _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee2() {
-                  return _regenerator2.default.wrap(function _callee2$(_context2) {
+                _context5.next = 33;
+                return _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee4() {
+                  return _regenerator2.default.wrap(function _callee4$(_context4) {
                     while (1) {
-                      switch (_context2.prev = _context2.next) {
+                      switch (_context4.prev = _context4.next) {
                         case 0:
                           new Promise(function (resolve) {
                             return ws.onopen = resolve;
@@ -1560,14 +1715,14 @@ var Client = function () {
 
                         case 1:
                         case 'end':
-                          return _context2.stop();
+                          return _context4.stop();
                       }
                     }
-                  }, _callee2, _this);
+                  }, _callee4, _this4);
                 }));
 
               case 33:
-                return _context3.abrupt('return', {
+                return _context5.abrupt('return', {
                   websocket: ws,
                   close: function close() {
                     return ws.close();
@@ -1585,14 +1740,14 @@ var Client = function () {
 
               case 34:
               case 'end':
-                return _context3.stop();
+                return _context5.stop();
             }
           }
-        }, _callee3, this, [[7, 11, 15, 23], [16,, 18, 22]]);
+        }, _callee5, this, [[7, 11, 15, 23], [16,, 18, 22]]);
       }));
 
       function instanceExec(_x82, _x83) {
-        return _ref2.apply(this, arguments);
+        return _ref4.apply(this, arguments);
       }
 
       return instanceExec;
