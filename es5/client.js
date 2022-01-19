@@ -520,7 +520,7 @@ var Client = function () {
         functionName: functionName,
         instanceType: instanceType
       };
-      return this.post(`/inner/services/${serviceName}/functions/grantTempCodeBucketPermission`, getTmpOssTokenOptions, headers);
+      return this.get(`/services/${serviceName}/tempCodeBucketToken`, getTmpOssTokenOptions, headers);
     }
   }, {
     key: 'largeFunctionHelper',
