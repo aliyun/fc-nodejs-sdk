@@ -1731,9 +1731,8 @@ var Client = function () {
                     if (!(data instanceof Uint8Array)) {
                       throw new Error('data must be Uint8Array');
                     }
-                    var messageArray = new Uint8Array(data.length + 1);
-                    messageArray.set([messageStdin]);
-                    messageArray.set(data, 1);
+                    var messageArray = new Uint8Array(data.length);
+                    messageArray.set(data);
                     ws.send(messageArray);
                   }
                 });
