@@ -547,29 +547,18 @@ var Client = function () {
             while (1) {
               switch (_context3.prev = _context3.next) {
                 case 0:
-                  _context3.prev = 0;
-                  _context3.next = 3;
+                  _context3.next = 2;
                   return client.put(`${that.accountid}/${serviceName}/${resp.data.objectName}`, path.normalize(options.code.zipFile));
 
-                case 3:
-                  _context3.next = 8;
-                  break;
-
-                case 5:
-                  _context3.prev = 5;
-                  _context3.t0 = _context3['catch'](0);
-
-                  console.log(_context3.t0);
-
-                case 8:
+                case 2:
                   return _context3.abrupt('return', resp);
 
-                case 9:
+                case 3:
                 case 'end':
                   return _context3.stop();
               }
             }
-          }, _callee3, this, [[0, 5]]);
+          }, _callee3, this);
         }));
 
         return function put() {
@@ -588,6 +577,7 @@ var Client = function () {
         accessKeySecret: resp.data.credentials.AccessKeySecret,
         stsToken: resp.data.credentials.SecurityToken,
         bucket: resp.data.ossBucket,
+        timeout: '600000', // 10min
         refreshSTSToken: function () {
           var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator2.default.mark(function _callee2() {
             var refreshToken;
