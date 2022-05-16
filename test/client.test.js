@@ -1169,6 +1169,39 @@ describe('client test', function () {
     });
   });
 
+  describe('get account config should ok', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: REGION
+    });
+
+    it('getAccountConfig should ok', async function () {
+      const response = await client.getAccountConfigs({
+        config: ['CodeSizeLimit', 'GPUCodeSizeLimit', 'Concurrency', 'EnhancedCodeSizeLimit']
+      });
+      expect(response.data).to.be.ok();
+      expect(response.data.CodeSizeLimit).to.be.equal('104857600');
+    });
+  });
+
+  describe('get oss temp token should ok', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: REGION
+    });
+
+    it('getTempBucketToken should ok', async function () {
+      const response = await client.getTempBucketToken();
+      expect(response.data).to.be.ok();
+      expect(response.data.credentials).to.be.ok();
+      expect(response.data.ossRegion).to.be.ok();
+      expect(response.data.ossBucket).to.be.ok();
+      expect(response.data.objectName).to.be.ok();
+    });
+  });
+
   describe('manage provision config should be ok', function () {
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
