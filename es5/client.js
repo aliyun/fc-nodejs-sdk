@@ -522,6 +522,31 @@ var Client = function () {
       };
       return this.get(`/services/${serviceName}/tempCodeBucketToken`, getTmpOssTokenOptions, headers);
     }
+
+    /**
+     * 获取访问 oss 的 token
+     *
+     * @param {Object} config 期望获取的配置的名字
+     * @return {Promise} 返回 oss token 信息
+     */
+
+  }, {
+    key: 'getAccountConfigs',
+    value: function getAccountConfigs(config) {
+      return this.get('/accountConfigs', config);
+    }
+
+    /**
+     * 获取访问 oss 的 token
+     *
+     * @return {Promise} 返回 oss token 信息
+     */
+
+  }, {
+    key: 'getTempBucketToken',
+    value: function getTempBucketToken() {
+      return this.get('/tempBucketToken');
+    }
   }, {
     key: 'largeFunctionHelper',
     value: function largeFunctionHelper(that, resp, serviceName, options, headers, isCreate, functionName) {
