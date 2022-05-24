@@ -1,6 +1,6 @@
 {
   "name": "@alicloud/fc2",
-  "version": "2.5.5",
+  "version": "2.6.0",
   "description": "Aliyun Function Compute API SDK2",
   "main": "index.js",
   "scripts": {
@@ -27,13 +27,13 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
     "babel-register": "^6.24.1",
-    "coveralls": "^2.13.0",
+    "coveralls": "^3.1.1",
     "doxmate": "^0.3.1",
-    "eslint": "^3.19.0",
+    "eslint": "^8.16.0",
     "expect.js": "^0.3.1",
     "git-pre-hooks": "^1.2.0",
-    "mocha": "^3.3.0",
-    "nyc": "^10.2.0"
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0"
   },
   "files": [
     "index.js",
