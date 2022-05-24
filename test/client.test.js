@@ -14,7 +14,7 @@ const REGION = process.env.REGION || 'cn-shanghai';
 const serviceName = process.env.SERVICE_NAME || 'fc-nodejs-sdk-unit-test';
 const triggerBucketName = process.env.TRIGGER_BUCKET || 'fc-sdk-trigger-bucket';
 const domainName = process.env.DOMAIN_NAME || `sdk.${ACCOUNT_ID}.${REGION}.functioncompute.com`;
-const jaegerEndpoint = process.env.JAEGER_ENDPOINT ;
+const jaegerEndpoint = process.env.JAEGER_ENDPOINT;
 
 
 describe('client test', function () {
@@ -176,7 +176,7 @@ describe('client test', function () {
 
     before(async function () {
       try {
-      // clean up
+        // clean up
         var listServiceOptions = {
           'prefix': serviceName
         };
@@ -658,7 +658,7 @@ describe('client test', function () {
 
   async function createServiceAndFunction(client, serviceName, functionName, handlerName) {
     // clean up
-    const service = await client.createService(serviceName, {    
+    const service = await client.createService(serviceName, {
       role: `acs:ram::${ACCOUNT_ID}:role/aliyunfclogexecutionrole`,
     });
     expect(service.data).to.be.ok();
@@ -1185,6 +1185,38 @@ describe('client test', function () {
     });
   });
 
+  describe('publish layer version should ok', function () {
+    const client = new FunctionComputeClient(ACCOUNT_ID, {
+      accessKeyID: ACCESS_KEY_ID,
+      accessKeySecret: ACCESS_KEY_SECRET,
+      region: REGION
+    });
+
+    let version;
+
+    it('publishLayerVersionForBigCode should ok', async function () {
+      const zipFilePath = path.join(__dirname, 'figures/test.zip');
+
+      const versionConfig = await client.publishLayerVersionForBigCode(layerName, {
+        codeConfig: {
+          zipFilePath,
+          size: fs.statSync(zipFilePath).size,
+        },
+        description: 'test sdk publishLayerVersionForBigCode',
+        compatibleRuntime: ['nodejs14'],
+      });
+
+      expect(versionConfig.data).to.have.property('layerName', layerName);
+      version = versionConfig.data.version;
+    });
+
+    it('remove layer version should ok', async function () {
+      if (version) {
+        await client.deleteLayerVersion(layerName, version);
+      }
+    });
+  });
+
   describe('get oss temp token should ok', function () {
     const client = new FunctionComputeClient(ACCOUNT_ID, {
       accessKeyID: ACCESS_KEY_ID,
@@ -1269,7 +1301,7 @@ describe('client test', function () {
     });
     const functionName = 'asyncTest';
     const asyncConfig = {
-      destinationConfig : {
+      destinationConfig: {
         onSuccess: {
           destination: `acs:mns:${REGION}:${ACCOUNT_ID}:/queues/sth/messages`
         }
@@ -1302,7 +1334,7 @@ describe('client test', function () {
 
     it('listFunctionAsyncConfig should ok', async function () {
       const response = await client.listFunctionAsyncConfigs(serviceName, functionName, {
-        limit : 1,
+        limit: 1,
       });
       expect(response.data).to.be.ok();
       expect(response.data.configs).to.be.ok();
