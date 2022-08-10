@@ -1424,6 +1424,10 @@ var Client = function () {
 
     /**
      * 获取当前 region 的 layer 列表
+     * 
+     * Options:
+     * - public, Accept value: true or false.
+     * - official, Accept value: true or false.
      */
 
   }, {
@@ -1472,6 +1476,23 @@ var Client = function () {
       var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
       return this.post(`/layers/${layerName}/versions`, options, headers);
+    }
+
+    /**
+     * 修改 layer 的 ACL 权限 (公开/私有)
+     * 
+     * Options:
+     * - public, Accept value: true or false.
+     * - official, Accept value: true or false.
+     */
+
+  }, {
+    key: 'putLayerACL',
+    value: function putLayerACL(layerName) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.put(`/layers/${layerName}/acl`, options, headers);
     }
 
     /**
@@ -1581,7 +1602,7 @@ var Client = function () {
         }, _callee5, this);
       }));
 
-      function publishLayerVersionForBigCode(_x70) {
+      function publishLayerVersionForBigCode(_x72) {
         return _ref4.apply(this, arguments);
       }
 
@@ -1874,7 +1895,7 @@ var Client = function () {
         }, _callee7, this, [[7, 11, 15, 23], [16,, 18, 22]]);
       }));
 
-      function instanceExec(_x85, _x86) {
+      function instanceExec(_x87, _x88) {
         return _ref9.apply(this, arguments);
       }
 
