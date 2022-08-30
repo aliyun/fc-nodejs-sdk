@@ -1466,6 +1466,19 @@ var Client = function () {
     }
 
     /**
+     * 使用 Layer ARN 获取指定版本的信息
+     */
+
+  }, {
+    key: 'getLayerVersionByArn',
+    value: function getLayerVersionByArn(layerArn) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var headers = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      return this.get(`/layerarn/${encodeURIComponent(layerArn)}`, options, headers);
+    }
+
+    /**
      * 发布 layer 的版本
      */
 
@@ -1602,7 +1615,7 @@ var Client = function () {
         }, _callee5, this);
       }));
 
-      function publishLayerVersionForBigCode(_x72) {
+      function publishLayerVersionForBigCode(_x74) {
         return _ref4.apply(this, arguments);
       }
 
@@ -1895,7 +1908,7 @@ var Client = function () {
         }, _callee7, this, [[7, 11, 15, 23], [16,, 18, 22]]);
       }));
 
-      function instanceExec(_x87, _x88) {
+      function instanceExec(_x89, _x90) {
         return _ref9.apply(this, arguments);
       }
 
