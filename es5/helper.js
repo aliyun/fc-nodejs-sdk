@@ -33,9 +33,7 @@ function composeStringToSign(method, path, headers, queries) {
   var date = headers['date'];
   var signHeaders = buildCanonicalHeaders(headers, 'x-fc-');
 
-  var u = url.parse(path);
-  var pathUnescaped = decodeURIComponent(u.pathname);
-  var str = `${method}\n${contentMD5}\n${contentType}\n${date}\n${signHeaders}${pathUnescaped}`;
+  var str = `${method}\n${contentMD5}\n${contentType}\n${date}\n${signHeaders}${path}`;
 
   if (queries) {
     var params = [];
