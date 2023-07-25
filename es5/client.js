@@ -597,7 +597,7 @@ var Client = function () {
         throw new Error(`the size of file ${fileSize} could not greater than ${resp.data.codeSizeLimit}`);
       }
       var client = new OSS({
-        region: resp.data.ossRegion,
+        endpoint: "https://oss-accelerate.aliyuncs.com",
         accessKeyId: resp.data.credentials.AccessKeyId,
         accessKeySecret: resp.data.credentials.AccessKeySecret,
         stsToken: resp.data.credentials.SecurityToken,
