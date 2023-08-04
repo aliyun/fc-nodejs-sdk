@@ -91,6 +91,7 @@ var Client = function () {
     this.version = '2016-08-15';
     this.timeout = Number.isFinite(config.timeout) ? config.timeout : 60000; // default is 60s
     this.headers = config.headers || {};
+    this.region = region;
   }
 
   _createClass(Client, [{
@@ -596,8 +597,14 @@ var Client = function () {
       if (fileSize > resp.data.codeSizeLimit) {
         throw new Error(`the size of file ${fileSize} could not greater than ${resp.data.codeSizeLimit}`);
       }
+      var ossEndpoint = "https://oss-accelerate.aliyuncs.com";
+      if (process.env.FC_REGION === this.region) {
+        ossEndpoint = `oss-${this.region}-internal.aliyuncs.com`;
+      }
+      // console.log(`fc-nodejs-sdk use oss endpoint: ${ossEndpoint}`);
+
       var client = new OSS({
-        endpoint: "https://oss-accelerate.aliyuncs.com",
+        endpoint: ossEndpoint,
         accessKeyId: resp.data.credentials.AccessKeyId,
         accessKeySecret: resp.data.credentials.AccessKeySecret,
         stsToken: resp.data.credentials.SecurityToken,
